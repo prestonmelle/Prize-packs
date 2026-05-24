@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+<title>Prize Packs</title>
+<style>
+  /* ── Reset & base ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --boy-primary: #1a6fbf;
+    --boy-secondary: #0d9e4e;
+    --boy-accent: #f5a623;
+    --girl-primary: #e8469a;
+    --girl-secondary: #ff8cc8;
+    --girl-accent: #ffb7d5;
+    --bg-dark: #12121a;
+    --bg-card: #1e1e2e;
+    --text-light: #f0f0f8;
+    --text-muted: #888;
+    --common-color: #aaaacc;
+    --uncommon-color: #4dcc88;
+    --rare-color: #4da6ff;
+    --familyevent-color: #ff9f43;
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--bg-dark);
+    color: var(--text-light);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    overflow: hidden;
+  }
+  .pack-wrapper {
+    touch-action: none;
+  }
+
+  /* ── Screens ── */
+  .screen {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.4s ease, transform 0.4s ease;
+  }
+  .screen.hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.96);
+  }
+
+  /* ── HOME SCREEN ── */
+  #home-screen {
+    background: radial-gradient(ellipse at 50% 0%, #2a1a3e 0%, var(--bg-dark) 70%);
+    padding: 24px;
+    gap: 32px;
+  }
+  #home-screen h1 {
+    font-size: clamp(1.8rem, 6vw, 2.8rem);
+    font-weight: 800;
+    text-align: center;
+    letter-spacing: -0.5px;
+  }
+  #home-screen h1 span { display: block; font-size: 0.45em; font-weight: 500; color: var(--text-muted); margin-top: 4px; letter-spacing: 0.5px; }
+
+  .pack-selector {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .pack-card {
+    width: 150px;
+    cursor: pointer;
+    border-radius: 20px;
+    padding: 20px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    border: 2px solid transparent;
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .pack-card:active { transform: scale(0.95); }
+  .pack-card.boy {
+    background: linear-gradient(145deg, #152a45, #1a3a60);
+    box-shadow: 0 8px 32px rgba(26,111,191,0.3);
+  }
+  .pack-card.girl {
+    background: linear-gradient(145deg, #3a1228, #501830);
+    box-shadow: 0 8px 32px rgba(232,70,154,0.3);
+  }
+  .pack-card:hover { transform: translateY(-4px); }
+  .pack-card.boy:hover { border-color: var(--boy-primary); box-shadow: 0 12px 40px rgba(26,111,191,0.5); }
+  .pack-card.girl:hover { border-color: var(--girl-primary); box-shadow: 0 12px 40px rgba(232,70,154,0.5); }
+
+  .pack-card .pack-icon { font-size: 3rem; line-height: 1; }
+  .pack-card .pack-name { font-size: 1rem; font-weight: 700; text-align: center; }
+  .pack-card .pack-sub { font-size: 0.72rem; color: var(--text-muted); text-align: center; }
+  .pack-card .pack-count {
+    font-size: 0.7rem;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 600;
+    margin-top: 4px;
+  }
+  .pack-card.boy .pack-count { background: rgba(26,111,191,0.25); color: #7bbfff; }
+  .pack-card.girl .pack-count { background: rgba(232,70,154,0.25); color: #ffb0d8; }
+
+  .home-footer { font-size: 0.72rem; color: var(--text-muted); text-align: center; }
+  .home-footer button {
+    background: none; border: none; color: #e05555; font-size: 0.72rem;
+    cursor: pointer; text-decoration: underline; padding: 0;
+  }
+
+  /* ── PACK OPEN SCREEN ── */
+  #pack-screen {
+    background: var(--bg-dark);
+    padding: 16px 16px 40px;
+    gap: 16px;
+    justify-content: flex-start;
+    overflow-y: auto;
+    padding-top: 20px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  #pack-screen.theme-boy {
+    background: radial-gradient(ellipse at 50% 30%, #0d2040 0%, var(--bg-dark) 70%);
+  }
+  #pack-screen.theme-girl {
+    background: radial-gradient(ellipse at 50% 30%, #40091e 0%, var(--bg-dark) 70%);
+  }
+
+  .pack-screen-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 420px;
+  }
+  .back-btn {
+    background: rgba(255,255,255,0.08);
+    border: none;
+    color: var(--text-light);
+    font-size: 0.85rem;
+    padding: 8px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background 0.2s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .back-btn:hover { background: rgba(255,255,255,0.14); }
+
+  .pack-screen-title { font-size: 1rem; font-weight: 700; }
+
+  .sound-btn {
+    background: rgba(255,255,255,0.08);
+    border: none;
+    color: var(--text-light);
+    font-size: 0.85rem;
+    padding: 8px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background 0.2s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .sound-btn:hover { background: rgba(255,255,255,0.14); }
+
+  /* ── THE PACK ── */
+  #pack-stage {
+    width: 220px;
+    height: 300px;
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .pack-wrapper {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    border-radius: 20px;
+    overflow: hidden;
+    cursor: grab;
+    user-select: none;
+  }
+
+  .pack-front, .pack-back {
+    position: absolute;
+    inset: 0;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: clip-path 0.05s linear;
+  }
+
+  .pack-front.theme-boy {
+    background: linear-gradient(160deg, #1a5fa0 0%, #0d3060 40%, #061830 100%);
+    border: 2px solid rgba(77,166,255,0.4);
+    box-shadow: 0 0 40px rgba(26,111,191,0.5), inset 0 0 60px rgba(0,0,0,0.3);
+  }
+  .pack-front.theme-girl {
+    background: linear-gradient(160deg, #e8469a 0%, #a0205a 40%, #580a2a 100%);
+    border: 2px solid rgba(255,180,215,0.4);
+    box-shadow: 0 0 40px rgba(232,70,154,0.5), inset 0 0 60px rgba(0,0,0,0.3);
+  }
+
+  .pack-front .pack-emoji { font-size: 3.5rem; }
+  .pack-front .pack-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    opacity: 0.7;
+  }
+  .pack-front .pack-name-big {
+    font-size: 1.4rem;
+    font-weight: 800;
+    text-align: center;
+    padding: 0 12px;
+    line-height: 1.2;
+  }
+  .pack-front .pack-shine {
+    position: absolute;
+    inset: 0;
+    border-radius: 20px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 50%, rgba(255,255,255,0.05) 100%);
+    pointer-events: none;
+  }
+
+  /* Knife indicator */
+  .slice-hint {
+    position: absolute;
+    bottom: 16px;
+    left: 0; right: 0;
+    text-align: center;
+    font-size: 0.72rem;
+    color: rgba(255,255,255,0.5);
+    pointer-events: none;
+    animation: pulse-hint 2s ease-in-out infinite;
+  }
+  @keyframes pulse-hint { 0%,100% { opacity: 0.5 } 50% { opacity: 1 } }
+
+  /* Slice line that follows the drag */
+  #slice-line {
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 3px;
+    background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.9), transparent);
+    pointer-events: none;
+    opacity: 0;
+    transform: translateX(-50%);
+    filter: blur(1px);
+    box-shadow: 0 0 8px rgba(255,255,255,0.8);
+    border-radius: 4px;
+  }
+
+  /* Pack halves after cut */
+  .pack-half {
+    position: absolute;
+    top: 0;
+    width: 50%;
+    height: 100%;
+    overflow: hidden;
+    transition: transform 0.5s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .pack-half.left { left: 0; transform-origin: left center; }
+  .pack-half.right { right: 0; transform-origin: right center; }
+  .pack-half.left.flung { transform: translateX(-120%) rotate(-15deg); }
+  .pack-half.right.flung { transform: translateX(120%) rotate(15deg); }
+  .pack-half .half-inner {
+    position: absolute;
+    top: 0;
+    height: 100%;
+  }
+  .pack-half.left .half-inner { left: 0; width: 200%; }
+  .pack-half.right .half-inner { right: 0; width: 200%; }
+
+  /* ── PRIZE REVEAL ── */
+  #prize-reveal {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    text-align: center;
+    animation: prize-pop 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+  }
+  #prize-reveal.visible { display: flex; }
+  @keyframes prize-pop {
+    0% { opacity: 0; transform: scale(0.5) translateY(20px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  .prize-tier-badge {
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 20px;
+  }
+  .prize-tier-badge.common      { background: rgba(170,170,204,0.2); color: var(--common-color);      border: 1px solid rgba(170,170,204,0.3); }
+  .prize-tier-badge.uncommon    { background: rgba(77,204,136,0.15); color: var(--uncommon-color);    border: 1px solid rgba(77,204,136,0.35); }
+  .prize-tier-badge.rare        { background: rgba(77,166,255,0.2);  color: var(--rare-color);        border: 1px solid rgba(77,166,255,0.4); }
+  .prize-tier-badge.familyevent { background: rgba(255,159,67,0.15); color: var(--familyevent-color); border: 1px solid rgba(255,159,67,0.4); animation: glow-orange 1.5s ease-in-out infinite; }
+
+  @keyframes glow-orange {
+    0%,100% { box-shadow: 0 0 8px rgba(255,159,67,0.3); }
+    50% { box-shadow: 0 0 20px rgba(255,159,67,0.7); }
+  }
+
+  /* ── WHAT'S INSIDE ── */
+  .whats-inside {
+    width: 100%;
+    max-width: 420px;
+    margin-top: 8px;
+  }
+  .whats-inside-title {
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    text-align: center;
+    margin-bottom: 12px;
+  }
+  .wi-tier {
+    margin-bottom: 14px;
+  }
+  .wi-tier-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .wi-tier-name {
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .wi-tier-name.common      { color: var(--common-color); }
+  .wi-tier-name.uncommon    { color: var(--uncommon-color); }
+  .wi-tier-name.rare        { color: var(--rare-color); }
+  .wi-tier-name.familyevent { color: var(--familyevent-color); }
+  .wi-tier-chance {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    background: rgba(255,255,255,0.06);
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+  .wi-prizes {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .wi-prize {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 12px;
+    padding: 8px 12px;
+  }
+  .wi-prize-emoji { font-size: 1.3rem; flex-shrink: 0; }
+  .wi-prize-info { display: flex; flex-direction: column; gap: 1px; }
+  .wi-prize-name { font-size: 0.8rem; font-weight: 700; }
+  .wi-prize-desc { font-size: 0.7rem; color: var(--text-muted); line-height: 1.4; }
+  .wi-divider {
+    height: 1px;
+    background: rgba(255,255,255,0.06);
+    margin: 4px 0 14px;
+  }
+
+  .prize-emoji { font-size: 4.5rem; line-height: 1; animation: prize-pop 0.6s 0.1s cubic-bezier(0.34,1.56,0.64,1) both; }
+  .prize-name { font-size: 1.5rem; font-weight: 800; line-height: 1.2; animation: prize-pop 0.6s 0.15s cubic-bezier(0.34,1.56,0.64,1) both; }
+  .prize-desc { font-size: 0.85rem; color: var(--text-muted); max-width: 240px; animation: prize-pop 0.6s 0.2s cubic-bezier(0.34,1.56,0.64,1) both; }
+
+  .prize-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 4px;
+    animation: prize-pop 0.6s 0.3s cubic-bezier(0.34,1.56,0.64,1) both;
+  }
+  .btn-primary {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 30px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn-primary:active { transform: scale(0.95); }
+  .btn-primary.theme-boy { background: linear-gradient(135deg, var(--boy-primary), var(--boy-secondary)); color: #fff; box-shadow: 0 4px 16px rgba(26,111,191,0.4); }
+  .btn-primary.theme-girl { background: linear-gradient(135deg, var(--girl-primary), var(--girl-secondary)); color: #fff; box-shadow: 0 4px 16px rgba(192,79,214,0.4); }
+  .btn-primary:hover { transform: translateY(-2px); }
+  .btn-primary:active { transform: scale(0.95) translateY(0); }
+
+  .btn-secondary {
+    padding: 12px 20px;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 30px;
+    background: transparent;
+    color: var(--text-light);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn-secondary:hover { background: rgba(255,255,255,0.08); }
+  .btn-secondary:active { transform: scale(0.95); }
+
+  /* ── INSTRUCTION ── */
+  .open-instruction {
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.4);
+    text-align: center;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .open-instruction span { animation: slide-arrow 1.5s ease-in-out infinite; display: inline-block; }
+  @keyframes slide-arrow { 0%,100% { transform: translateX(0); } 50% { transform: translateX(6px); } }
+
+  /* ── CONFETTI ── */
+  #confetti-canvas {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 100;
+  }
+
+  /* ── Pack count ── */
+  .pack-stat {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    background: rgba(255,255,255,0.05);
+    padding: 5px 14px;
+    border-radius: 20px;
+  }
+  .pack-stat strong { color: var(--text-light); }
+
+  /* Tier breakdown hint */
+  .tier-hint {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    text-align: center;
+    max-width: 260px;
+    line-height: 1.6;
+  }
+  .tier-hint .c { color: var(--common-color); }
+  .tier-hint .r { color: var(--rare-color); }
+  .tier-hint .sr { color: var(--superrare-color); }
+</style>
+</head>
+<body>
+
+<canvas id="confetti-canvas"></canvas>
+
+<!-- ═══════════════════════════════════════
+     HOME SCREEN
+═══════════════════════════════════════ -->
+<div id="home-screen" class="screen">
+  <h1>Prize Packs <span>Choose your pack to open</span></h1>
+
+  <div class="pack-selector">
+    <!-- BOY PACK -->
+    <div class="pack-card boy" onclick="selectPack('boy')" role="button" tabindex="0" aria-label="Open Hudson's Pack">
+      <div class="pack-icon">🦕</div>
+      <div class="pack-name">Hudson's Pack</div>
+      <div class="pack-sub">For the little explorer</div>
+      <div class="pack-count" id="boy-count">0 opened</div>
+    </div>
+
+    <!-- GIRL PACK -->
+    <div class="pack-card girl" onclick="selectPack('girl')" role="button" tabindex="0" aria-label="Open Monroe's Pack">
+      <div class="pack-icon">🌸</div>
+      <div class="pack-name">Monroe's Pack</div>
+      <div class="pack-sub">For the little flower lover</div>
+      <div class="pack-count" id="girl-count">0 opened</div>
+    </div>
+  </div>
+
+  <div class="tier-hint">
+    <span class="c">●</span> Common (60%) &nbsp;
+    <span class="r">●</span> Rare (30%) &nbsp;
+    <span class="sr">●</span> Super Rare (10%)
+  </div>
+
+  <div class="home-footer">
+    Edit prizes near the top of the &lt;script&gt; tag &nbsp;·&nbsp;
+    <button onclick="resetProgress()">reset progress</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     PACK OPEN SCREEN
+═══════════════════════════════════════ -->
+<div id="pack-screen" class="screen hidden">
+  <div class="pack-screen-header">
+    <button class="back-btn" onclick="goHome()">← Back</button>
+    <div class="pack-screen-title" id="pack-screen-title">Dino Pack</div>
+    <button class="sound-btn" id="sound-btn" onclick="toggleSound()">🔊</button>
+  </div>
+
+  <!-- Pack stage (slice zone) -->
+  <div id="pack-stage">
+    <div class="pack-wrapper" id="pack-wrapper">
+      <div class="pack-front" id="pack-front">
+        <div class="pack-shine"></div>
+        <div class="pack-label">PRIZE PACK</div>
+        <div class="pack-emoji" id="pack-emoji">🦕</div>
+        <div class="pack-name-big" id="pack-name-big">Dino Pack</div>
+        <div class="slice-hint">↔ Drag to slice open</div>
+      </div>
+      <div id="slice-line"></div>
+    </div>
+  </div>
+
+  <div class="open-instruction" id="open-instruction">
+    <span>→</span> Drag your finger across the pack <span>←</span>
+  </div>
+
+  <!-- Prize reveal (hidden until pack opened) -->
+  <div id="prize-reveal">
+    <div class="prize-tier-badge" id="prize-tier-badge">COMMON</div>
+    <div class="prize-emoji" id="prize-emoji">🎉</div>
+    <div class="prize-name" id="prize-name">Prize Name</div>
+    <div class="prize-desc" id="prize-desc">Prize description goes here.</div>
+    <div class="prize-actions">
+      <button class="btn-primary" id="next-pack-btn" onclick="nextPack()">Open Another Pack 🎁</button>
+      <button class="btn-secondary" onclick="goHome()">Home</button>
+    </div>
+  </div>
+
+  <div class="pack-stat" id="pack-stat">Opened: <strong>0</strong> packs</div>
+
+  <!-- What's Inside -->
+  <div class="whats-inside" id="whats-inside">
+    <div class="wi-divider"></div>
+    <div class="whats-inside-title">What's Inside</div>
+    <div id="wi-content"><!-- populated by JS --></div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════
+//  PRIZE CONFIG — edit these to customize prizes!
+// ════════════════════════════════════════════════════════
+
+const PRIZES = {
+  boy: {
+    common: [
+      { emoji: '🍬', name: 'Candy or Gum',          desc: 'Pick candy or a pack of gum.' },
+    ],
+    uncommon: [
+      { emoji: '🟡', name: 'Pokémon Pack',          desc: 'Open a fresh Pokémon booster!' },
+      { emoji: '🏈', name: 'NFL Card Pack',          desc: 'Rip open an NFL card pack.' },
+      { emoji: '⛽', name: 'Gas Station Run',        desc: 'A trip to the gas station for a treat.' },
+    ],
+    rare: [
+      { emoji: '💵', name: '$20 Shopping Spree',    desc: '$20 to spend at ANY store you pick!' },
+      { emoji: '✨', name: 'Double Prize!',          desc: 'Open another pack — that prize counts DOUBLE!' },
+    ],
+    familyevent: [
+      { emoji: '🎳', name: 'Family Bowling Night',  desc: 'Pick the day — the whole family goes bowling!' },
+      { emoji: '🎢', name: 'Day/Night at Lagoon',    desc: 'A full day or night out at Lagoon — rides, fun, the whole thing!' },
+      { emoji: '🎬', name: 'Movie Night Pick',       desc: 'You choose the movie for family movie night.' },
+      { emoji: '🍕', name: 'Pizza & Pick Night',    desc: 'Pizza dinner and you pick the family activity.' },
+      { emoji: '🎟️', name: 'Your Choice Outing',   desc: 'Pick ANY family event you want — your call!' },
+    ],
+  },
+  girl: {
+    common: [
+      { emoji: '🍬', name: 'Candy or Gum',          desc: 'Pick candy or a pack of gum.' },
+    ],
+    uncommon: [
+      { emoji: '🟡', name: 'Pokémon Pack',          desc: 'Open a fresh Pokémon booster!' },
+      { emoji: '🏈', name: 'NFL Card Pack',          desc: 'Rip open an NFL card pack.' },
+      { emoji: '⛽', name: 'Gas Station Run',        desc: 'A trip to the gas station for a treat.' },
+    ],
+    rare: [
+      { emoji: '💵', name: '$20 Shopping Spree',    desc: '$20 to spend at ANY store you pick!' },
+      { emoji: '✨', name: 'Double Prize!',          desc: 'Open another pack — that prize counts DOUBLE!' },
+    ],
+    familyevent: [
+      { emoji: '🎳', name: 'Family Bowling Night',  desc: 'Pick the day — the whole family goes bowling!' },
+      { emoji: '🎢', name: 'Day/Night at Lagoon',    desc: 'A full day or night out at Lagoon — rides, fun, the whole thing!' },
+      { emoji: '🎬', name: 'Movie Night Pick',       desc: 'You choose the movie for family movie night.' },
+      { emoji: '🍕', name: 'Pizza & Pick Night',    desc: 'Pizza dinner and you pick the family activity.' },
+      { emoji: '🎟️', name: 'Your Choice Outing',   desc: 'Pick ANY family event you want — your call!' },
+    ],
+  },
+};
+
+// Drop rates (must sum to 1.0)
+const TIER_RATES = { common: 0.53, uncommon: 0.30, rare: 0.10, familyevent: 0.07 };
+
+// Tier display config
+const TIER_META = {
+  common:      { label: 'Common',       chance: '53%' },
+  uncommon:    { label: 'Uncommon',     chance: '30%' },
+  rare:        { label: 'Rare',         chance: '10%' },
+  familyevent: { label: 'Family Event', chance: '7%'  },
+};
+
+// ════════════════════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════════════════════
+let state = {
+  soundOn: true,
+  currentPack: null,  // 'boy' | 'girl'
+  counts: { boy: 0, girl: 0 },
+};
+
+// Load saved counts
+try {
+  const saved = JSON.parse(localStorage.getItem('prizepackState') || '{}');
+  if (saved.counts) state.counts = saved.counts;
+} catch(e) {}
+
+function saveState() {
+  localStorage.setItem('prizepackState', JSON.stringify({ counts: state.counts }));
+}
+
+// ════════════════════════════════════════════════════════
+//  NAVIGATION
+// ════════════════════════════════════════════════════════
+function selectPack(type) {
+  state.currentPack = type;
+  const theme = type === 'boy' ? 'theme-boy' : 'theme-girl';
+  const emoji = type === 'boy' ? '🦕' : '🌸';
+  const name  = type === 'boy' ? "Hudson's Pack" : "Monroe's Pack";
+  const color = type === 'boy' ? 'var(--boy-primary)' : 'var(--girl-primary)';
+
+  // Set up UI
+  document.getElementById('pack-screen-title').textContent = name;
+  document.getElementById('pack-emoji').textContent = emoji;
+  document.getElementById('pack-name-big').textContent = name;
+  document.getElementById('next-pack-btn').className = `btn-primary ${theme}`;
+
+  const pf = document.getElementById('pack-front');
+  pf.className = `pack-front ${theme}`;
+
+  const ps = document.getElementById('pack-screen');
+  ps.className = `screen ${theme}`;
+
+  updatePackStat();
+  resetPackAnimation();
+  populateWhatsInside(type);
+  showScreen('pack-screen');
+}
+
+function goHome() {
+  showScreen('home-screen');
+  updateHomeCounts();
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+}
+
+function resetProgress() {
+  if (!confirm('Reset all pack counts? This cannot be undone.')) return;
+  state.counts = { boy: 0, girl: 0 };
+  saveState();
+  updateHomeCounts();
+}
+
+function updateHomeCounts() {
+  document.getElementById('boy-count').textContent = state.counts.boy + ' opened';
+  document.getElementById('girl-count').textContent = state.counts.girl + ' opened';
+}
+
+function updatePackStat() {
+  const n = state.counts[state.currentPack] || 0;
+  document.getElementById('pack-stat').innerHTML = `Opened: <strong>${n}</strong> pack${n !== 1 ? 's' : ''}`;
+}
+
+// ════════════════════════════════════════════════════════
+//  SOUND
+// ════════════════════════════════════════════════════════
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx = null;
+
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new AudioCtx();
+  return audioCtx;
+}
+
+function playSliceSound() {
+  if (!state.soundOn) return;
+  try {
+    const ctx = getAudioCtx();
+    const buf = ctx.createBuffer(1, ctx.sampleRate * 0.3, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) {
+      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / data.length, 2) * 0.4;
+    }
+    const src = ctx.createBufferSource();
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.value = 2000 + Math.random() * 2000;
+    filter.Q.value = 0.5;
+    src.buffer = buf;
+    src.connect(filter);
+    filter.connect(ctx.destination);
+    src.start();
+  } catch(e) {}
+}
+
+function playRevealSound(tier) {
+  if (!state.soundOn) return;
+  try {
+    const ctx = getAudioCtx();
+    const notes = tier === 'superrare' ? [523, 659, 784, 1047] : tier === 'rare' ? [440, 554, 659] : [330, 415];
+    notes.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0, ctx.currentTime + i * 0.12);
+      gain.gain.linearRampToValueAtTime(0.18, ctx.currentTime + i * 0.12 + 0.04);
+      gain.gain.linearRampToValueAtTime(0, ctx.currentTime + i * 0.12 + 0.22);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(ctx.currentTime + i * 0.12);
+      osc.stop(ctx.currentTime + i * 0.12 + 0.25);
+    });
+  } catch(e) {}
+}
+
+function toggleSound() {
+  state.soundOn = !state.soundOn;
+  document.getElementById('sound-btn').textContent = state.soundOn ? '🔊' : '🔇';
+}
+
+// ════════════════════════════════════════════════════════
+//  PACK ANIMATION
+// ════════════════════════════════════════════════════════
+let isDragging = false;
+let dragStartX = null;
+let dragCurrentX = null;
+let packOpened = false;
+let sliceTriggered = false;
+
+const packWrapper = document.getElementById('pack-wrapper');
+const sliceLine   = document.getElementById('slice-line');
+
+function resetPackAnimation() {
+  packOpened = false;
+  sliceTriggered = false;
+  isDragging = false;
+
+  const pf = document.getElementById('pack-front');
+  pf.style.display = 'flex';
+  pf.style.clipPath = '';
+
+  sliceLine.style.opacity = '0';
+  sliceLine.style.left = '50%';
+
+  document.getElementById('prize-reveal').classList.remove('visible');
+  document.getElementById('open-instruction').style.display = 'flex';
+  document.getElementById('pack-stat').style.display = '';
+
+  // Remove any old halves
+  document.querySelectorAll('.pack-half').forEach(e => e.remove());
+}
+
+function getEventX(e) {
+  if (e.touches && e.touches.length > 0) return e.touches[0].clientX;
+  if (e.changedTouches && e.changedTouches.length > 0) return e.changedTouches[0].clientX;
+  return e.clientX;
+}
+
+function getEventY(e) {
+  if (e.touches && e.touches.length > 0) return e.touches[0].clientY;
+  if (e.changedTouches && e.changedTouches.length > 0) return e.changedTouches[0].clientY;
+  return e.clientY;
+}
+
+packWrapper.addEventListener('mousedown', startDrag, { passive: false });
+packWrapper.addEventListener('touchstart', startDrag, { passive: false });
+window.addEventListener('mousemove', moveDrag, { passive: false });
+window.addEventListener('touchmove', moveDrag, { passive: false });
+window.addEventListener('mouseup', endDrag);
+window.addEventListener('touchend', endDrag);
+
+function startDrag(e) {
+  if (packOpened) return;
+  e.preventDefault();
+  isDragging = true;
+  dragStartX = getEventX(e);
+  dragCurrentX = dragStartX;
+  sliceLine.style.opacity = '1';
+}
+
+function moveDrag(e) {
+  if (!isDragging || packOpened) return;
+  e.preventDefault();
+  dragCurrentX = getEventX(e);
+
+  const rect = packWrapper.getBoundingClientRect();
+  const relX = dragCurrentX - rect.left;
+  const pct = Math.max(0, Math.min(100, (relX / rect.width) * 100));
+
+  sliceLine.style.left = pct + '%';
+
+  // Wobble the pack slightly
+  const delta = dragCurrentX - dragStartX;
+  packWrapper.style.transform = `rotate(${delta * 0.03}deg)`;
+
+  // Trigger slice if dragged far enough
+  const dragDist = Math.abs(delta);
+  if (dragDist > 60 && !sliceTriggered) {
+    sliceTriggered = true;
+    triggerSlice(pct, rect);
+  }
+}
+
+function endDrag(e) {
+  if (!isDragging) return;
+  isDragging = false;
+  if (!packOpened) {
+    sliceLine.style.opacity = '0';
+    packWrapper.style.transform = '';
+  }
+}
+
+function triggerSlice(cutPct, rect) {
+  packOpened = true;
+  playSliceSound();
+
+  const pf = document.getElementById('pack-front');
+  const theme = state.currentPack === 'boy' ? 'theme-boy' : 'theme-girl';
+
+  // Build two halves that mirror the original appearance
+  function makeHalf(side) {
+    const half = document.createElement('div');
+    half.className = `pack-half ${side}`;
+
+    const inner = document.createElement('div');
+    inner.className = 'half-inner';
+
+    // Clone the pack front visuals
+    const clone = pf.cloneNode(true);
+    clone.style.position = 'relative';
+    clone.style.borderRadius = '20px';
+    clone.style.width = '220px'; // full pack width
+    clone.style.height = '100%';
+    clone.style.display = 'flex';
+    inner.appendChild(clone);
+    half.appendChild(inner);
+    return half;
+  }
+
+  const leftHalf  = makeHalf('left');
+  const rightHalf = makeHalf('right');
+
+  pf.style.display = 'none';
+  sliceLine.style.opacity = '0';
+  packWrapper.style.transform = '';
+
+  packWrapper.appendChild(leftHalf);
+  packWrapper.appendChild(rightHalf);
+
+  // Animate the halves flying apart after a short pause
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      leftHalf.classList.add('flung');
+      rightHalf.classList.add('flung');
+    });
+  });
+
+  // Show prize after animation
+  setTimeout(() => {
+    revealPrize();
+  }, 550);
+}
+
+// ════════════════════════════════════════════════════════
+//  PRIZE LOGIC
+// ════════════════════════════════════════════════════════
+function rollTier() {
+  const r = Math.random();
+  if (r < TIER_RATES.familyevent) return 'familyevent';
+  if (r < TIER_RATES.familyevent + TIER_RATES.rare) return 'rare';
+  if (r < TIER_RATES.familyevent + TIER_RATES.rare + TIER_RATES.uncommon) return 'uncommon';
+  return 'common';
+}
+
+function revealPrize() {
+  const tier   = rollTier();
+  const pool   = PRIZES[state.currentPack][tier];
+  const prize  = pool[Math.floor(Math.random() * pool.length)];
+
+  const badge  = document.getElementById('prize-tier-badge');
+  badge.className = `prize-tier-badge ${tier}`;
+  const tierLabels = { common: 'COMMON', uncommon: '✨ UNCOMMON', rare: '💎 RARE', familyevent: '🎉 FAMILY EVENT' };
+  badge.textContent = tierLabels[tier] || tier.toUpperCase();
+
+  document.getElementById('prize-emoji').textContent = prize.emoji;
+  document.getElementById('prize-name').textContent  = prize.name;
+  document.getElementById('prize-desc').textContent  = prize.desc;
+
+  document.getElementById('prize-reveal').classList.add('visible');
+  document.getElementById('open-instruction').style.display = 'none';
+  document.getElementById('pack-stage').style.opacity = '0.1';
+
+  // Update count
+  state.counts[state.currentPack] = (state.counts[state.currentPack] || 0) + 1;
+  saveState();
+  updatePackStat();
+
+  playRevealSound(tier);
+
+  if (tier !== 'common') {
+    launchConfetti(tier);
+  }
+}
+
+function nextPack() {
+  document.getElementById('pack-stage').style.opacity = '1';
+  resetPackAnimation();
+}
+
+function populateWhatsInside(type) {
+  const packPrizes = PRIZES[type];
+  const tierOrder = ['common', 'uncommon', 'rare', 'familyevent'];
+  const container = document.getElementById('wi-content');
+
+  container.innerHTML = tierOrder.map(tier => {
+    const meta = TIER_META[tier];
+    const prizes = packPrizes[tier];
+    return `
+      <div class="wi-tier">
+        <div class="wi-tier-header">
+          <div class="wi-tier-name ${tier}">${meta.label}</div>
+          <div class="wi-tier-chance">${meta.chance} chance</div>
+        </div>
+        <div class="wi-prizes">
+          ${prizes.map(p => `
+            <div class="wi-prize">
+              <div class="wi-prize-emoji">${p.emoji}</div>
+              <div class="wi-prize-info">
+                <div class="wi-prize-name">${p.name}</div>
+                <div class="wi-prize-desc">${p.desc}</div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ════════════════════════════════════════════════════════
+//  CONFETTI
+// ════════════════════════════════════════════════════════
+const canvas  = document.getElementById('confetti-canvas');
+const ctx2d   = canvas.getContext('2d');
+let confettiParticles = [];
+let confettiRAF = null;
+
+function launchConfetti(tier) {
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const isBoy = state.currentPack === 'boy';
+  const colors = tier === 'familyevent'
+    ? ['#ffd700','#ffec80','#ff9500','#fff','#ffe87a','#ff6b6b']
+    : isBoy
+      ? ['#4da6ff','#80caff','#4dcc88','#ffffff','#a8f0c6']
+      : ['#ff6bac','#ffb0d5','#ff8cc8','#ffffff','#ffd6eb'];
+
+  const count = tier === 'familyevent' ? 140 : 80;
+
+  confettiParticles = [];
+  for (let i = 0; i < count; i++) {
+    confettiParticles.push({
+      x: Math.random() * canvas.width,
+      y: -20 - Math.random() * 120,
+      w: 6 + Math.random() * 10,
+      h: 4 + Math.random() * 6,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      vx: (Math.random() - 0.5) * 4,
+      vy: 2 + Math.random() * 4,
+      spin: (Math.random() - 0.5) * 0.2,
+      angle: Math.random() * Math.PI * 2,
+      opacity: 1,
+    });
+  }
+
+  if (confettiRAF) cancelAnimationFrame(confettiRAF);
+  animateConfetti();
+}
+
+function animateConfetti() {
+  ctx2d.clearRect(0, 0, canvas.width, canvas.height);
+  let alive = false;
+
+  confettiParticles.forEach(p => {
+    p.x += p.vx;
+    p.y += p.vy;
+    p.vy += 0.08;
+    p.angle += p.spin;
+    if (p.y > canvas.height * 0.7) p.opacity -= 0.025;
+    p.opacity = Math.max(0, p.opacity);
+
+    if (p.opacity > 0) {
+      alive = true;
+      ctx2d.save();
+      ctx2d.globalAlpha = p.opacity;
+      ctx2d.translate(p.x, p.y);
+      ctx2d.rotate(p.angle);
+      ctx2d.fillStyle = p.color;
+      ctx2d.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      ctx2d.restore();
+    }
+  });
+
+  if (alive) {
+    confettiRAF = requestAnimationFrame(animateConfetti);
+  } else {
+    ctx2d.clearRect(0, 0, canvas.width, canvas.height);
+  }
+}
+
+// ════════════════════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════════════════════
+updateHomeCounts();
+showScreen('home-screen');
+
+// Keyboard support for pack cards
+document.querySelectorAll('.pack-card').forEach(card => {
+  card.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') card.click();
+  });
+});
+
+window.addEventListener('resize', () => {
+  if (confettiParticles.length) {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+});
+</script>
+</body>
+</html>
