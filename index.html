@@ -619,38 +619,38 @@ const PRIZES = {
 };
 
 // ═══ TIER CONFIG ═══
-const TIER_RATES = { common: 0.30, uncommon: 0.40, rare: 0.20, familyevent: 0.10 };
+const TIER_RATES = { common: 0.35, uncommon: 0.30, rare: 0.25, familyevent: 0.10 };
 const TIER_META = {
-  common:      { label: 'Common',       chance: '30%', color: '#888880' },
-  uncommon:    { label: 'Uncommon',     chance: '40%', color: '#4dcc88' },
-  rare:        { label: 'Rare',         chance: '20%', color: '#5aaeff' },
+  common:      { label: 'Common',       chance: '35%', color: '#888880' },
+  uncommon:    { label: 'Uncommon',     chance: '30%', color: '#4dcc88' },
+  rare:        { label: 'Rare',         chance: '25%', color: '#5aaeff' },
   familyevent: { label: 'Family Event', chance: '10%', color: '#f0a030' },
 };
 
 // 20 equal slices of 18° each — all same size visually
-// Counts match exact odds: Common×6=30%, Uncommon×8=40%, Rare×4=20%, FamilyEvent×2=10%
+// Counts match exact odds: Common×7=35%, Uncommon×6=30%, Rare×5=25%, FamilyEvent×2=10%
 // Interleaved so no obvious tier grouping
 const SLICE_LAYOUT = [
   { tier: 'common' },
   { tier: 'uncommon' },
   { tier: 'rare' },
+  { tier: 'common' },
+  { tier: 'familyevent' },
   { tier: 'uncommon' },
+  { tier: 'rare' },
+  { tier: 'common' },
+  { tier: 'uncommon' },
+  { tier: 'rare' },
   { tier: 'familyevent' },
   { tier: 'common' },
   { tier: 'uncommon' },
   { tier: 'rare' },
-  { tier: 'uncommon' },
   { tier: 'common' },
+  { tier: 'uncommon' },
   { tier: 'rare' },
-  { tier: 'familyevent' },
-  { tier: 'uncommon' },
-  { tier: 'common' },
-  { tier: 'rare' },
-  { tier: 'uncommon' },
-  { tier: 'uncommon' },
   { tier: 'common' },
   { tier: 'uncommon' },
-  { tier: 'uncommon' },
+  { tier: 'common' },
 ];
 const SLICE_DEGREES = 18; // 360 / 20
 
