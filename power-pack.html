@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prize Packs</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --boy-primary: #1a6fd4;
+  --boy-secondary: #cc1a1a;
+  --boy-glow: rgba(26,111,212,0.55);
+  --girl-primary: #c44070;
+  --girl-secondary: #e07898;
+  --girl-glow: rgba(196,64,112,0.55);
+  --bg-dark: #080808;
+  --bg-card: #111111;
+  --text-light: #f0ede8;
+  --text-muted: #666;
+  --common-color: #888880;
+  --uncommon-color: #4dcc88;
+  --rare-color: #5aaeff;
+  --familyevent-color: #f0a030;
+}
+
+body {
+  background: var(--bg-dark);
+  color: var(--text-light);
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ─── HOME SCREEN ─── */
+#home-screen {
+  width: 100%;
+  max-width: 680px;
+  padding: 48px 20px 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.site-title {
+  font-size: 2.6rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-light);
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.site-subtitle {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  margin-bottom: 52px;
+  text-align: center;
+  letter-spacing: 0.02em;
+}
+
+.pack-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  width: 100%;
+  margin-bottom: 40px;
+}
+
+.pack-card {
+  background: var(--bg-card);
+  border-radius: 16px;
+  padding: 32px 20px;
+  cursor: pointer;
+  text-align: center;
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  border: 1.5px solid transparent;
+  user-select: none;
+}
+
+.pack-card.boy  { border-color: rgba(26,111,212,0.3); }
+.pack-card.girl { border-color: rgba(196,64,112,0.3); }
+
+.pack-card.boy:hover  { transform: translateY(-4px); box-shadow: 0 0 40px rgba(26,111,212,0.25); border-color: rgba(26,111,212,0.6); }
+.pack-card.girl:hover { transform: translateY(-4px); box-shadow: 0 0 40px rgba(196,64,112,0.25); border-color: rgba(196,64,112,0.6); }
+
+.pack-card.selected.boy  { border-color: var(--boy-primary);  box-shadow: 0 0 40px rgba(26,111,212,0.35); }
+.pack-card.selected.girl { border-color: var(--girl-primary); box-shadow: 0 0 40px rgba(196,64,112,0.35); }
+
+.pack-card-icon { font-size: 2.8rem; margin-bottom: 14px; }
+
+.pack-card-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  margin-bottom: 6px;
+}
+.pack-card.boy  .pack-card-name { color: var(--boy-primary); }
+.pack-card.girl .pack-card-name { color: var(--girl-primary); }
+
+.pack-card-count { font-size: 0.78rem; color: var(--text-muted); }
+
+/* ─── OPEN BUTTON ─── */
+.open-pack-btn {
+  display: none;
+  margin: 0 auto 40px;
+  padding: 16px 52px;
+  font-size: 1.05rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.2s;
+}
+.open-pack-btn.visible { display: block; }
+.open-pack-btn.boy-btn  { background: linear-gradient(135deg,#1a6fd4,#3a8ff4); color:#000; box-shadow: 0 0 30px rgba(26,111,212,0.45); }
+.open-pack-btn.girl-btn { background: linear-gradient(135deg,#c44070,#e06090); color:#fff; box-shadow: 0 0 30px rgba(196,64,112,0.45); }
+.open-pack-btn:hover { transform: scale(1.05); }
+
+/* ─── PRIZE LIST ─── */
+.prize-list-section { width: 100%; display: none; }
+.prize-list-section.visible { display: block; }
+
+.prize-list-header {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.tier-group { margin-bottom: 22px; }
+
+.tier-label-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.tier-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.tier-label { font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.06em; }
+.tier-chance { font-size: 0.78rem; color: var(--text-muted); margin-left: auto; }
+
+.tier-prizes { display: flex; flex-direction: column; gap: 6px; padding-left: 18px; }
+
+.prize-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+.prize-emoji { font-size: 1.25rem; flex-shrink: 0; line-height: 1.4; }
+.prize-info { flex: 1; }
+.prize-name { font-size: 0.88rem; font-weight: 600; }
+.prize-desc { font-size: 0.76rem; color: var(--text-muted); margin-top: 2px; line-height: 1.4; }
+
+/* ─── PACK SCREEN ─── */
+#pack-screen {
+  display: none;
+  width: 100%;
+  max-width: 680px;
+  padding: 28px 20px 60px;
+  flex-direction: column;
+  align-items: center;
+}
+
+.back-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  cursor: pointer;
+  align-self: flex-start;
+  padding: 4px 0;
+  margin-bottom: 18px;
+  transition: color 0.2s;
+  letter-spacing: 0.02em;
+}
+.back-btn:hover { color: var(--text-light); }
+
+.pack-screen-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 28px;
+  text-align: center;
+}
+#pack-screen.theme-boy  .pack-screen-title { color: var(--boy-primary); }
+#pack-screen.theme-girl .pack-screen-title { color: var(--girl-primary); }
+
+/* ─── STAGE SCENE ─── */
+.pack-scene {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 100%;
+  margin-bottom: 28px;
+}
+
+.scene-pillar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.scene-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
+.scene-platform {
+  height: 16px;
+  width: 100%;
+  border-radius: 6px 6px 2px 2px;
+  background: linear-gradient(180deg, #1e1e1e 0%, #111 100%);
+  border-top: 1px solid rgba(255,255,255,0.07);
+}
+
+/* ── Hudson — Police Theme ── */
+@keyframes sirenPulse {
+  0%   { box-shadow: -8px 0 18px rgba(26,111,212,0.9), 8px 0 8px rgba(204,26,26,0.3), 0 0 24px rgba(26,111,212,0.6); }
+  50%  { box-shadow: -8px 0 12px rgba(26,111,212,0.4), 8px 0 18px rgba(204,26,26,0.9), 0 0 24px rgba(204,26,26,0.6); }
+  100% { box-shadow: -8px 0 18px rgba(26,111,212,0.9), 8px 0 8px rgba(204,26,26,0.3), 0 0 24px rgba(26,111,212,0.6); }
+}
+.theme-boy .pillar-top {
+  width: 68px; height: 20px;
+  border-radius: 5px 5px 3px 3px;
+  background: linear-gradient(90deg, #0a3a8a 0%, #1055cc 48%, #cc1a1a 52%, #8a0a0a 100%);
+  border: 1.5px solid rgba(255,255,255,0.25);
+  position: relative; margin-bottom: 3px;
+  animation: sirenPulse 1.4s ease-in-out infinite;
+}
+.theme-boy .pillar-top::before {
+  content: ''; position: absolute;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: radial-gradient(circle at 40% 40%, #88bbff, #1a6fd4);
+  top: 50%; transform: translateY(-50%); left: 8px;
+  box-shadow: 0 0 8px rgba(26,111,212,0.9);
+}
+.theme-boy .pillar-top::after {
+  content: ''; position: absolute;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: radial-gradient(circle at 40% 40%, #ffaaaa, #cc1a1a);
+  top: 50%; transform: translateY(-50%); right: 8px;
+  box-shadow: 0 0 8px rgba(204,26,26,0.9);
+}
+.theme-boy .pillar-body {
+  width: 26px; height: 210px;
+  border-radius: 3px;
+  display: flex; flex-direction: column; align-items: flex-end;
+  justify-content: space-evenly; padding: 16px 0;
+  background: linear-gradient(90deg, #070d1a 0%, #0e1c38 40%, #122040 70%, #070d1a 100%);
+  border-left: 2px solid rgba(26,111,212,0.2);
+  border-right: 2px solid rgba(26,111,212,0.2);
+}
+.theme-boy .pillar-detail {
+  width: 28px; height: 9px;
+  border-radius: 0 3px 3px 0;
+  background: linear-gradient(90deg, rgba(26,111,212,0.5) 0%, rgba(26,111,212,0.12) 70%, transparent 100%);
+  border-top: 1px solid rgba(26,111,212,0.25);
+  border-bottom: 1px solid rgba(26,111,212,0.1);
+  margin-right: -4px;
+}
+.theme-boy .pillar-detail:nth-child(even) {
+  border-radius: 3px 0 0 3px;
+  background: linear-gradient(270deg, rgba(26,111,212,0.5) 0%, rgba(26,111,212,0.12) 70%, transparent 100%);
+  margin-right: 0; margin-left: -4px; align-self: flex-start;
+}
+.theme-boy .pillar-foot {
+  width: 36px; height: 10px;
+  border-radius: 2px 2px 4px 4px;
+  background: linear-gradient(180deg, #0e1c38 0%, #050a14 100%);
+  border: 1px solid rgba(26,111,212,0.2);
+  border-top: none;
+}
+
+/* ── Monroe — Garden Flowers ── */
+.theme-girl .pillar-top {
+  width: 48px; height: 48px; border-radius: 50%;
+  background: radial-gradient(circle at 42% 38%, #f8a0c8 0%, #d04888 45%, #8a1840 100%);
+  border: 1.5px solid rgba(240,140,190,0.45);
+  box-shadow: 0 0 18px rgba(196,64,112,0.7), 0 0 36px rgba(196,64,112,0.3), 0 0 0 7px rgba(196,64,112,0.08);
+  position: relative; margin-bottom: 2px;
+}
+.theme-girl .pillar-top::before {
+  content: ''; position: absolute;
+  width: 20px; height: 28px; border-radius: 50%;
+  background: radial-gradient(ellipse at 60% 50%, rgba(220,80,130,0.6) 0%, rgba(160,40,90,0.3) 100%);
+  top: 50%; transform: translateY(-50%); left: -13px;
+}
+.theme-girl .pillar-top::after {
+  content: ''; position: absolute;
+  width: 20px; height: 28px; border-radius: 50%;
+  background: radial-gradient(ellipse at 40% 50%, rgba(220,80,130,0.6) 0%, rgba(160,40,90,0.3) 100%);
+  top: 50%; transform: translateY(-50%); right: -13px;
+}
+.theme-girl .pillar-body {
+  width: 10px; height: 210px; border-radius: 4px;
+  background: linear-gradient(90deg, #1a4018 0%, #2e6828 50%, #1a4018 100%);
+  display: flex; flex-direction: column; align-items: flex-end;
+  justify-content: space-evenly; padding: 14px 0;
+}
+.theme-girl .pillar-detail {
+  width: 26px; height: 12px;
+  border-radius: 0 50% 50% 0;
+  background: linear-gradient(90deg, #1e5020 0%, #348030 60%, rgba(30,80,20,0) 100%);
+  margin-right: -4px;
+}
+.theme-girl .pillar-detail:nth-child(even) {
+  border-radius: 50% 0 0 50%;
+  background: linear-gradient(270deg, #1c4a1e 0%, #2e7028 60%, rgba(25,70,15,0) 100%);
+  margin-right: 0; margin-left: -4px; align-self: flex-start;
+}
+.theme-girl .pillar-foot {
+  width: 20px; height: 12px; border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 30%, #1e3010 0%, #0e1808 100%);
+}
+
+/* ─── SPIN WHEEL ─── */
+#pack-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 0 8px;
+}
+
+.wheel-wrapper {
+  position: relative;
+  width: 300px; height: 300px;
+}
+
+#wheel-canvas {
+  display: block;
+  border-radius: 50%;
+}
+
+.wheel-pointer {
+  position: absolute;
+  top: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0; height: 0;
+  border-left: 13px solid transparent;
+  border-right: 13px solid transparent;
+  border-top: 28px solid #ffffff;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.6));
+  z-index: 10;
+}
+
+.wheel-center-dot {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 3px solid #111;
+  z-index: 10;
+  box-shadow: 0 0 10px rgba(255,255,255,0.4);
+}
+
+.theme-boy  .wheel-wrapper { filter: drop-shadow(0 0 22px rgba(200,134,26,0.55)); }
+.theme-girl .wheel-wrapper { filter: drop-shadow(0 0 22px rgba(196,64,112,0.55)); }
+
+/* ─── SPIN BUTTON ─── */
+.spin-btn {
+  margin-top: 28px;
+  padding: 15px 60px;
+  font-size: 1.05rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.2s, opacity 0.2s;
+}
+.spin-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none !important; }
+.spin-btn:not(:disabled):hover { transform: scale(1.06); }
+
+.theme-boy  .spin-btn { background: linear-gradient(135deg,#1a6fd4,#3a8ff4); color:#000; box-shadow: 0 0 28px rgba(26,111,212,0.5); }
+.theme-girl .spin-btn { background: linear-gradient(135deg,#c44070,#e06090); color:#fff; box-shadow: 0 0 28px rgba(196,64,112,0.5); }
+
+/* ─── PRIZE REVEAL ─── */
+#prize-reveal {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 32px 28px;
+  background: var(--bg-card);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 420px;
+  margin-top: 24px;
+  border: 1px solid rgba(255,255,255,0.07);
+}
+#prize-reveal.visible { display: flex; }
+
+.reveal-tier {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 5px 18px;
+  border-radius: 20px;
+  margin-bottom: 18px;
+}
+
+.reveal-emoji { font-size: 4rem; margin-bottom: 12px; line-height: 1; }
+.reveal-name  { font-size: 1.55rem; font-weight: 800; margin-bottom: 8px; }
+.reveal-desc  { font-size: 0.92rem; color: var(--text-muted); margin-bottom: 28px; line-height: 1.5; }
+
+.again-btn {
+  padding: 13px 44px;
+  font-size: 0.95rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  margin-bottom: 10px;
+  transition: transform 0.15s;
+}
+.again-btn:hover { transform: scale(1.04); }
+
+.theme-boy  #prize-reveal .again-btn { background: linear-gradient(135deg,#1a6fd4,#3a8ff4); color:#000; }
+.theme-girl #prize-reveal .again-btn { background: linear-gradient(135deg,#c44070,#e06090); color:#fff; }
+
+.home-btn {
+  background: none;
+  border: 1px solid rgba(255,255,255,0.15);
+  color: var(--text-muted);
+  padding: 10px 32px;
+  border-radius: 50px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  transition: border-color 0.2s, color 0.2s;
+}
+.home-btn:hover { border-color: rgba(255,255,255,0.4); color: var(--text-light); }
+
+/* ─── CONFETTI ─── */
+#confetti-canvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 999;
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ HOME SCREEN ═══ -->
+<div id="home-screen">
+  <h1 class="site-title">Prize Packs</h1>
+  <p class="site-subtitle">Pick your pack and spin to win</p>
+
+  <div class="pack-grid">
+    <div class="pack-card boy" onclick="selectPack('boy')">
+      <div class="pack-card-icon">🚔</div>
+      <div class="pack-card-name">Hudson's Pack</div>
+      <div class="pack-card-count" id="boy-count">0 packs opened</div>
+    </div>
+    <div class="pack-card girl" onclick="selectPack('girl')">
+      <div class="pack-card-icon">🌸</div>
+      <div class="pack-card-name">Monroe's Pack</div>
+      <div class="pack-card-count" id="girl-count">0 packs opened</div>
+    </div>
+  </div>
+
+  <button class="open-pack-btn" id="open-pack-btn" onclick="goToPackScreen()">Spin the Wheel</button>
+
+  <div class="prize-list-section" id="prize-list-section">
+    <div class="prize-list-header">What's Inside</div>
+    <div id="prize-list-content"></div>
+  </div>
+</div>
+
+<!-- ═══ PACK SCREEN ═══ -->
+<div id="pack-screen">
+  <button class="back-btn" onclick="goHome()">← Back to Packs</button>
+  <div class="pack-screen-title" id="pack-screen-title">Hudson's Pack</div>
+
+  <div class="pack-scene">
+    <!-- Left pillar -->
+    <div class="scene-pillar">
+      <div class="pillar-top"></div>
+      <div class="pillar-body">
+        <div class="pillar-detail"></div>
+        <div class="pillar-detail"></div>
+        <div class="pillar-detail"></div>
+      </div>
+      <div class="pillar-foot"></div>
+    </div>
+
+    <!-- Center: wheel + platform -->
+    <div class="scene-center">
+      <div id="pack-stage">
+        <div class="wheel-wrapper" id="wheel-wrapper">
+          <canvas id="wheel-canvas" width="300" height="300"></canvas>
+          <div class="wheel-pointer"></div>
+          <div class="wheel-center-dot"></div>
+        </div>
+        <button class="spin-btn" id="spin-btn" onclick="startSpin()">Spin!</button>
+      </div>
+      <div class="scene-platform"></div>
+    </div>
+
+    <!-- Right pillar -->
+    <div class="scene-pillar">
+      <div class="pillar-top"></div>
+      <div class="pillar-body">
+        <div class="pillar-detail"></div>
+        <div class="pillar-detail"></div>
+        <div class="pillar-detail"></div>
+      </div>
+      <div class="pillar-foot"></div>
+    </div>
+  </div>
+
+  <!-- Prize reveal -->
+  <div id="prize-reveal">
+    <div class="reveal-tier" id="reveal-tier"></div>
+    <div class="reveal-emoji" id="reveal-emoji"></div>
+    <div class="reveal-name" id="reveal-name"></div>
+    <div class="reveal-desc" id="reveal-desc"></div>
+    <button class="again-btn" onclick="resetSpin()">Spin Again</button>
+    <button class="home-btn" onclick="goHome()">Back to Packs</button>
+  </div>
+</div>
+
+<canvas id="confetti-canvas"></canvas>
+
+<script>
+// ═══ PRIZES ═══
+const PRIZES = {
+  boy: {
+    common: [
+      { emoji: '🍬', name: 'Candy or Gum', desc: 'Pick candy or a piece of gum.' },
+    ],
+    uncommon: [
+      { emoji: '📺', name: 'Watch a Show', desc: 'Watch a show at some point during the day.' },
+      { emoji: '🎁', name: 'Prize Box', desc: 'Pick a prize from the prize box.' },
+      { emoji: '⛽', name: 'Gas Station Run', desc: 'A trip to the gas station for a treat.' },
+      { emoji: '🌙', name: 'Stay Up Late', desc: 'Stay up 30 minutes past bedtime.' },
+      { emoji: '🎲', name: 'Family Game Night', desc: 'Pick a game to play with the family.' },
+    ],
+    rare: [
+      { emoji: '🍽️', name: 'Pick Dinner', desc: 'Pick what we eat for dinner.' },
+      { emoji: '📱', name: 'iPad Time', desc: 'Get 30 minutes of iPad time.' },
+      { emoji: '🍪', name: 'Swig Cookie & Drink', desc: 'Go get a cookie and drink from Swig.' },
+    ],
+    familyevent: [
+      { emoji: '🎳', name: 'Family Bowling Night', desc: 'Pick the day — the whole family goes bowling!' },
+      { emoji: '🎢', name: 'Day/Night at Lagoon', desc: 'A full day or night out at Lagoon — rides, fun, the whole thing!' },
+      { emoji: '🎬', name: 'Movie Night Pick', desc: 'You choose the movie for family movie night.' },
+      { emoji: '🍕', name: 'Pizza Night', desc: 'Pizza dinner and you pick the family activity.' },
+      { emoji: '🎟️', name: 'Your Choice Outing', desc: 'Pick ANY family event you want — your call!' },
+    ],
+  },
+  girl: {
+    common: [
+      { emoji: '🍬', name: 'Candy or Gum', desc: 'Pick candy or a piece of gum.' },
+    ],
+    uncommon: [
+      { emoji: '📺', name: 'Watch a Show', desc: 'Watch a show at some point during the day.' },
+      { emoji: '🎁', name: 'Prize Box', desc: 'Pick a prize from the prize box.' },
+      { emoji: '⛽', name: 'Gas Station Run', desc: 'A trip to the gas station for a treat.' },
+      { emoji: '🌙', name: 'Stay Up Late', desc: 'Stay up 30 minutes past bedtime.' },
+      { emoji: '🎲', name: 'Family Game Night', desc: 'Pick a game to play with the family.' },
+    ],
+    rare: [
+      { emoji: '🍽️', name: 'Pick Dinner', desc: 'Pick what we eat for dinner.' },
+      { emoji: '📱', name: 'iPad Time', desc: 'Get 30 minutes of iPad time.' },
+      { emoji: '🍪', name: 'Swig Cookie & Drink', desc: 'Go get a cookie and drink from Swig.' },
+    ],
+    familyevent: [
+      { emoji: '🎳', name: 'Family Bowling Night', desc: 'Pick the day — the whole family goes bowling!' },
+      { emoji: '🎢', name: 'Day/Night at Lagoon', desc: 'A full day or night out at Lagoon — rides, fun, the whole thing!' },
+      { emoji: '🎬', name: 'Movie Night Pick', desc: 'You choose the movie for family movie night.' },
+      { emoji: '🍕', name: 'Pizza Night', desc: 'Pizza dinner and you pick the family activity.' },
+      { emoji: '🎟️', name: 'Your Choice Outing', desc: 'Pick ANY family event you want — your call!' },
+    ],
+  }
+};
+
+// ═══ TIER CONFIG ═══
+const TIER_RATES = { common: 0.55, uncommon: 0.30, rare: 0.10, familyevent: 0.05 };
+const TIER_META = {
+  common:      { label: 'Common',       chance: '55%', color: '#888880' },
+  uncommon:    { label: 'Uncommon',     chance: '30%', color: '#4dcc88' },
+  rare:        { label: 'Rare',         chance: '10%', color: '#5aaeff' },
+  familyevent: { label: 'Family Event', chance: '5%',  color: '#f0a030' },
+};
+
+// 20 equal slices of 18° each — all same size visually
+// Counts match exact odds: Common×11=55%, Uncommon×6=30%, Rare×2=10%, FamilyEvent×1=5%
+// Interleaved so no obvious tier grouping
+const SLICE_LAYOUT = [
+  { tier: 'common' },
+  { tier: 'uncommon' },
+  { tier: 'common' },
+  { tier: 'rare' },
+  { tier: 'common' },
+  { tier: 'uncommon' },
+  { tier: 'common' },
+  { tier: 'rare' },
+  { tier: 'common' },
+  { tier: 'uncommon' },
+  { tier: 'common' },
+  { tier: 'familyevent' },
+  { tier: 'common' },
+  { tier: 'uncommon' },
+  { tier: 'common' },
+  { tier: 'uncommon' },
+  { tier: 'common' },
+  { tier: 'uncommon' },
+  { tier: 'common' },
+  { tier: 'common' },
+];
+const SLICE_DEGREES = 18; // 360 / 20
+
+// Vibrant palette — 20 distinct colors, randomly shuffled each pack open
+const COLOR_PALETTE = [
+  '#FF6B6B','#FFD93D','#6BCB77','#4D96FF','#FF922B',
+  '#CC5DE8','#20C997','#F06595','#74C0FC','#A9E34B',
+  '#FF8787','#FFA94D','#63E6BE','#DA77F2','#38D9A9',
+  '#FF6B9D','#C0EB75','#66D9E8','#FFC078','#8CE99A',
+];
+
+let WHEEL_SLICES = []; // built fresh each pack open
+
+function shuffleArray(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function initWheelSlices() {
+  const colors = shuffleArray(COLOR_PALETTE);
+  WHEEL_SLICES = SLICE_LAYOUT.map((s, i) => ({
+    tier:    s.tier,
+    degrees: SLICE_DEGREES,
+    color:   colors[i],
+  }));
+}
+
+// ═══ STATE ═══
+const STATE_KEY = 'prizepackState';
+let currentPack  = null;
+let isSpinning   = false;
+let currentRotation = 0;
+let animFrameId  = null;
+
+function loadState() {
+  try { return JSON.parse(localStorage.getItem(STATE_KEY)) || { boy: 0, girl: 0 }; }
+  catch { return { boy: 0, girl: 0 }; }
+}
+function saveState(s) { localStorage.setItem(STATE_KEY, JSON.stringify(s)); }
+
+function updateCounts() {
+  const s = loadState();
+  const fmt = (n, id) => {
+    document.getElementById(id).textContent = n + (n === 1 ? ' pack opened' : ' packs opened');
+  };
+  fmt(s.boy,  'boy-count');
+  fmt(s.girl, 'girl-count');
+}
+
+// ═══ ROLL ═══
+function rollTier() {
+  const r = Math.random();
+  if (r < TIER_RATES.familyevent) return 'familyevent';
+  if (r < TIER_RATES.familyevent + TIER_RATES.rare) return 'rare';
+  if (r < TIER_RATES.familyevent + TIER_RATES.rare + TIER_RATES.uncommon) return 'uncommon';
+  return 'common';
+}
+function pickPrize(tier) {
+  const pool = PRIZES[currentPack][tier];
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+// ═══ WHEEL DRAWING ═══
+function lighten(hex, amt) {
+  const n = parseInt(hex.slice(1), 16);
+  return `rgb(${Math.min(255,(n>>16)+amt)},${Math.min(255,((n>>8)&0xff)+amt)},${Math.min(255,(n&0xff)+amt)})`;
+}
+function darken(hex, amt) {
+  const n = parseInt(hex.slice(1), 16);
+  return `rgb(${Math.max(0,(n>>16)-amt)},${Math.max(0,((n>>8)&0xff)-amt)},${Math.max(0,(n&0xff)-amt)})`;
+}
+
+function drawWheel(rotDeg) {
+  const canvas = document.getElementById('wheel-canvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const cx = W / 2, cy = H / 2, r = W / 2 - 3;
+
+  ctx.clearRect(0, 0, W, H);
+
+  // Outer shadow ring
+  ctx.beginPath();
+  ctx.arc(cx, cy, r + 2, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(0,0,0,0.5)';
+  ctx.fill();
+
+  const baseRad = (rotDeg - 90) * Math.PI / 180;
+  let startAngle = baseRad;
+
+  for (const slice of WHEEL_SLICES) {
+    const spanRad  = slice.degrees * Math.PI / 180;
+    const endAngle = startAngle + spanRad;
+    const midAngle = startAngle + spanRad / 2;
+
+    // Filled wedge
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r, startAngle, endAngle);
+    ctx.closePath();
+
+    const grad = ctx.createRadialGradient(cx, cy, r * 0.08, cx, cy, r);
+    grad.addColorStop(0,   lighten(slice.color, 50));
+    grad.addColorStop(0.5, slice.color);
+    grad.addColorStop(1,   darken(slice.color, 35));
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    // Divider
+    ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Mystery "?" label — centered in each slice
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(midAngle);
+    const labelR = r * 0.62;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.shadowColor = 'rgba(0,0,0,0.8)';
+    ctx.shadowBlur = 4;
+    ctx.font = 'bold 14px Segoe UI, system-ui, sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.9)';
+    ctx.fillText('?', labelR, 0);
+    ctx.restore();
+
+    startAngle = endAngle;
+  }
+
+  // Outer border ring
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+}
+
+// ═══ SPIN LOGIC ═══
+// Given a winning tier, compute how many degrees to rotate so the pointer
+// (fixed at 12 o'clock) lands inside one of that tier's slices.
+// Multiple slices may share the same tier — we pick one at random.
+function getSpinTarget(tier) {
+  // Build a list of {startAngle, degrees} for every slice of this tier
+  let angle = 0;
+  const matches = [];
+  for (const slice of WHEEL_SLICES) {
+    if (slice.tier === tier) {
+      matches.push({ startAngle: angle, degrees: slice.degrees });
+    }
+    angle += slice.degrees;
+  }
+  if (matches.length === 0) return 2160;
+
+  // Pick a random matching slice
+  const chosen = matches[Math.floor(Math.random() * matches.length)];
+  const margin = Math.max(2, chosen.degrees * 0.15);
+  const targetInArc = chosen.startAngle + margin + Math.random() * (chosen.degrees - margin * 2);
+  const fullSpins = (6 + Math.floor(Math.random() * 3)) * 360; // 6–8 full rotations
+  return fullSpins + (360 - (targetInArc % 360));
+}
+
+function easeOut(t) { return 1 - Math.pow(1 - t, 4); }
+
+let spinStartTime  = null;
+let spinDuration   = 4500;
+let spinStartRot   = 0;
+let spinTotalDelta = 0;
+let pendingTier    = null;
+
+function startSpin() {
+  if (isSpinning) return;
+  isSpinning = true;
+  document.getElementById('spin-btn').disabled = true;
+  document.getElementById('prize-reveal').classList.remove('visible');
+
+  pendingTier    = rollTier();
+  spinStartRot   = currentRotation;
+  spinTotalDelta = getSpinTarget(pendingTier);
+  spinDuration   = 4200 + Math.random() * 1000;
+  spinStartTime  = null;
+
+  playSpinSound();
+  requestAnimationFrame(animateSpin);
+}
+
+function animateSpin(ts) {
+  if (!spinStartTime) spinStartTime = ts;
+  const t = Math.min((ts - spinStartTime) / spinDuration, 1);
+  currentRotation = spinStartRot + spinTotalDelta * easeOut(t);
+  drawWheel(currentRotation);
+
+  if (t < 1) {
+    animFrameId = requestAnimationFrame(animateSpin);
+  } else {
+    isSpinning = false;
+    onSpinComplete(pendingTier);
+  }
+}
+
+function onSpinComplete(tier) {
+  const prize = pickPrize(tier);
+  const meta  = TIER_META[tier];
+
+  // Bump count
+  const s = loadState();
+  s[currentPack]++;
+  saveState(s);
+  updateCounts();
+
+  // Populate reveal card
+  document.getElementById('reveal-tier').style.display = 'none';
+
+  document.getElementById('reveal-emoji').textContent = prize.emoji;
+  document.getElementById('reveal-name').textContent  = prize.name;
+  document.getElementById('reveal-desc').textContent  = prize.desc;
+  document.getElementById('prize-reveal').classList.add('visible');
+
+  if (tier === 'rare' || tier === 'familyevent') fireConfetti(meta.color);
+  playRevealSound(tier);
+}
+
+function resetSpin() {
+  document.getElementById('prize-reveal').classList.remove('visible');
+  document.getElementById('spin-btn').disabled = false;
+}
+
+// ═══ NAVIGATION ═══
+function selectPack(pack) {
+  currentPack = pack;
+  document.querySelectorAll('.pack-card').forEach(c => c.classList.remove('selected'));
+  document.querySelector('.pack-card.' + pack).classList.add('selected');
+
+  const btn = document.getElementById('open-pack-btn');
+  btn.classList.add('visible');
+  btn.className = 'open-pack-btn visible ' + (pack === 'boy' ? 'boy-btn' : 'girl-btn');
+
+  renderPrizeList(pack);
+  document.getElementById('prize-list-section').classList.add('visible');
+}
+
+function goToPackScreen() {
+  if (!currentPack) return;
+  document.getElementById('home-screen').style.display = 'none';
+
+  const ps = document.getElementById('pack-screen');
+  ps.style.display = 'flex';
+  ps.className = 'theme-' + (currentPack === 'boy' ? 'boy' : 'girl');
+
+  document.getElementById('pack-screen-title').textContent =
+    currentPack === 'boy' ? "Hudson's Pack" : "Monroe's Pack";
+
+  document.getElementById('spin-btn').disabled = false;
+  document.getElementById('prize-reveal').classList.remove('visible');
+
+  // Re-randomize slice colors and draw
+  initWheelSlices();
+  currentRotation = Math.random() * 360;
+  drawWheel(currentRotation);
+}
+
+function goHome() {
+  if (animFrameId) { cancelAnimationFrame(animFrameId); animFrameId = null; }
+  isSpinning = false;
+  document.getElementById('pack-screen').style.display = 'none';
+  document.getElementById('home-screen').style.display = '';
+  updateCounts();
+}
+
+// ═══ PRIZE LIST ═══
+function renderPrizeList(pack) {
+  const container = document.getElementById('prize-list-content');
+  container.innerHTML = '';
+  for (const tier of ['common','uncommon','rare','familyevent']) {
+    const meta   = TIER_META[tier];
+    const prizes = PRIZES[pack][tier];
+    const g = document.createElement('div');
+    g.className = 'tier-group';
+    g.innerHTML = `
+      <div class="tier-prizes">
+        ${prizes.map(p => `
+          <div class="prize-row">
+            <span class="prize-emoji">${p.emoji}</span>
+            <div class="prize-info">
+              <div class="prize-name">${p.name}</div>
+              <div class="prize-desc">${p.desc}</div>
+            </div>
+          </div>
+        `).join('')}
+      </div>`;
+    container.appendChild(g);
+  }
+}
+
+// ═══ CONFETTI ═══
+const confCanvas = document.getElementById('confetti-canvas');
+const confCtx    = confCanvas.getContext('2d');
+let confParticles = [];
+let confAnimId    = null;
+
+function fireConfetti(accentColor) {
+  confCanvas.width  = window.innerWidth;
+  confCanvas.height = window.innerHeight;
+
+  const colors = ['#f0a030','#4dcc88','#5aaeff','#c44070','#c8861a','#ffffff', accentColor];
+  confParticles = Array.from({ length: 130 }, () => ({
+    x:     Math.random() * confCanvas.width,
+    y:     -10 - Math.random() * 120,
+    r:     4 + Math.random() * 6,
+    color: colors[Math.floor(Math.random() * colors.length)],
+    vx:    (Math.random() - 0.5) * 6,
+    vy:    3 + Math.random() * 4,
+    spin:  Math.random() * 360,
+    spinV: (Math.random() - 0.5) * 9,
+    shape: Math.random() > 0.5 ? 'rect' : 'circle',
+  }));
+
+  if (confAnimId) cancelAnimationFrame(confAnimId);
+  animateConfetti();
+}
+
+function animateConfetti() {
+  confCtx.clearRect(0, 0, confCanvas.width, confCanvas.height);
+  confParticles.forEach(p => {
+    p.x  += p.vx;
+    p.y  += p.vy;
+    p.vy += 0.13;
+    p.vx *= 0.99;
+    p.spin += p.spinV;
+    confCtx.save();
+    confCtx.translate(p.x, p.y);
+    confCtx.rotate(p.spin * Math.PI / 180);
+    confCtx.fillStyle = p.color;
+    if (p.shape === 'rect') confCtx.fillRect(-p.r, -p.r/2, p.r*2, p.r);
+    else { confCtx.beginPath(); confCtx.arc(0,0,p.r/2,0,Math.PI*2); confCtx.fill(); }
+    confCtx.restore();
+  });
+  confParticles = confParticles.filter(p => p.y < confCanvas.height + 60);
+  if (confParticles.length > 0) confAnimId = requestAnimationFrame(animateConfetti);
+  else confCtx.clearRect(0, 0, confCanvas.width, confCanvas.height);
+}
+
+// ═══ SOUNDS ═══
+let audioCtx = null;
+function getAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+function playSpinSound() {
+  try {
+    const ctx = getAudio();
+    const osc = ctx.createOscillator(), gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(400, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(80, ctx.currentTime + 0.35);
+    gain.gain.setValueAtTime(0.14, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.45);
+    osc.start(); osc.stop(ctx.currentTime + 0.45);
+  } catch(e) {}
+}
+function playRevealSound(tier) {
+  try {
+    const ctx = getAudio();
+    const freqs =
+      tier === 'rare'        ? [523,659,784,1047] :
+      tier === 'familyevent' ? [523,659,784,1047,1319] :
+      tier === 'uncommon'    ? [440,554,659] : [330,392];
+    freqs.forEach((f, i) => {
+      const osc = ctx.createOscillator(), gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = 'sine'; osc.frequency.value = f;
+      const t = ctx.currentTime + i * 0.12;
+      gain.gain.setValueAtTime(0.12, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+      osc.start(t); osc.stop(t + 0.5);
+    });
+  } catch(e) {}
+}
+
+// ═══ INIT ═══
+updateCounts();
+</script>
+</body>
+</html>
