@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Prize Packs</title>
+<title>Melle Kids Prize Wheel</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -469,18 +469,18 @@ body {
 
 <!-- ═══ HOME SCREEN ═══ -->
 <div id="home-screen">
-  <h1 class="site-title">Prize Packs</h1>
-  <p class="site-subtitle">Pick your pack and spin to win</p>
+  <h1 class="site-title">Melle Kids Prize Wheel</h1>
+  <p class="site-subtitle">Pick your wheel and see what you win</p>
 
   <div class="pack-grid">
     <div class="pack-card boy" onclick="selectPack('boy')">
       <div class="pack-card-icon">🚔</div>
-      <div class="pack-card-name">Hudson's Pack</div>
+      <div class="pack-card-name">Hudson's Wheel</div>
       <div class="pack-card-count" id="boy-count">0 packs opened</div>
     </div>
     <div class="pack-card girl" onclick="selectPack('girl')">
       <div class="pack-card-icon">🌸</div>
-      <div class="pack-card-name">Monroe's Pack</div>
+      <div class="pack-card-name">Monroe's Wheel</div>
       <div class="pack-card-count" id="girl-count">0 packs opened</div>
     </div>
   </div>
@@ -887,7 +887,7 @@ function goToPackScreen() {
   ps.className = 'theme-' + (currentPack === 'boy' ? 'boy' : 'girl');
 
   document.getElementById('pack-screen-title').textContent =
-    currentPack === 'boy' ? "Hudson's Pack" : "Monroe's Pack";
+    currentPack === 'boy' ? "Hudson's Wheel" : "Monroe's Wheel";
 
   document.getElementById('spin-btn').disabled = false;
   document.getElementById('prize-reveal').classList.remove('visible');
