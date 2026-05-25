@@ -1,899 +1,693 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Prize Packs</title>
 <style>
-  /* ── Reset & base ── */
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
-  :root {
-    --boy-primary: #1a6fbf;
-    --boy-secondary: #0d9e4e;
-    --boy-accent: #f5a623;
-    --girl-primary: #e8469a;
-    --girl-secondary: #ff8cc8;
-    --girl-accent: #ffb7d5;
-    --bg-dark: #12121a;
-    --bg-card: #1e1e2e;
-    --text-light: #f0f0f8;
-    --text-muted: #888;
-    --common-color: #aaaacc;
-    --uncommon-color: #4dcc88;
-    --rare-color: #4da6ff;
-    --familyevent-color: #ff9f43;
-  }
+:root {
+  --boy-primary: #1a6fd4;
+  --boy-secondary: #cc1a1a;
+  --boy-glow: rgba(26,111,212,0.55);
+  --girl-primary: #c44070;
+  --girl-secondary: #e07898;
+  --girl-glow: rgba(196,64,112,0.55);
+  --bg-dark: #080808;
+  --bg-card: #111111;
+  --text-light: #f0ede8;
+  --text-muted: #666;
+  --common-color: #888880;
+  --uncommon-color: #4dcc88;
+  --rare-color: #5aaeff;
+  --familyevent-color: #f0a030;
+}
 
-  html, body {
-    height: 100%;
-    background: var(--bg-dark);
-    color: var(--text-light);
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    overflow: hidden;
-  }
-  .pack-wrapper {
-    touch-action: none;
-  }
+body {
+  background: var(--bg-dark);
+  color: var(--text-light);
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
 
-  /* ── Screens ── */
-  .screen {
-    position: fixed;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    transition: opacity 0.4s ease, transform 0.4s ease;
-  }
-  .screen.hidden {
-    opacity: 0;
-    pointer-events: none;
-    transform: scale(0.96);
-  }
+/* ─── HOME SCREEN ─── */
+#home-screen {
+  width: 100%;
+  max-width: 680px;
+  padding: 48px 20px 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
 
-  /* ── HOME SCREEN ── */
-  #home-screen {
-    background: radial-gradient(ellipse at 50% 0%, #2a1a3e 0%, var(--bg-dark) 70%);
-    padding: 24px;
-    gap: 32px;
-  }
-  #home-screen h1 {
-    font-size: clamp(1.8rem, 6vw, 2.8rem);
-    font-weight: 800;
-    text-align: center;
-    letter-spacing: -0.5px;
-  }
-  #home-screen h1 span { display: block; font-size: 0.45em; font-weight: 500; color: var(--text-muted); margin-top: 4px; letter-spacing: 0.5px; }
+.site-title {
+  font-size: 2.6rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-light);
+  margin-bottom: 8px;
+  text-align: center;
+}
 
-  .pack-selector {
-    display: flex;
-    gap: 20px;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
+.site-subtitle {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  margin-bottom: 52px;
+  text-align: center;
+  letter-spacing: 0.02em;
+}
 
-  .pack-card {
-    width: 150px;
-    cursor: pointer;
-    border-radius: 20px;
-    padding: 20px 16px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-    border: 2px solid transparent;
-    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
-    user-select: none;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .pack-card:active { transform: scale(0.95); }
-  .pack-card.boy {
-    background: linear-gradient(145deg, #152a45, #1a3a60);
-    box-shadow: 0 8px 32px rgba(26,111,191,0.3);
-  }
-  .pack-card.girl {
-    background: linear-gradient(145deg, #3a1228, #501830);
-    box-shadow: 0 8px 32px rgba(232,70,154,0.3);
-  }
-  .pack-card:hover { transform: translateY(-4px); }
-  .pack-card.boy:hover { border-color: var(--boy-primary); box-shadow: 0 12px 40px rgba(26,111,191,0.5); }
-  .pack-card.girl:hover { border-color: var(--girl-primary); box-shadow: 0 12px 40px rgba(232,70,154,0.5); }
+.pack-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  width: 100%;
+  margin-bottom: 40px;
+}
 
-  .pack-card .pack-icon { font-size: 3rem; line-height: 1; }
-  .pack-card .pack-name { font-size: 1rem; font-weight: 700; text-align: center; }
-  .pack-card .pack-sub { font-size: 0.72rem; color: var(--text-muted); text-align: center; }
-  .pack-card .pack-count {
-    font-size: 0.7rem;
-    padding: 3px 10px;
-    border-radius: 20px;
-    font-weight: 600;
-    margin-top: 4px;
-  }
-  .pack-card.boy .pack-count { background: rgba(26,111,191,0.25); color: #7bbfff; }
-  .pack-card.girl .pack-count { background: rgba(232,70,154,0.25); color: #ffb0d8; }
+.pack-card {
+  background: var(--bg-card);
+  border-radius: 16px;
+  padding: 32px 20px;
+  cursor: pointer;
+  text-align: center;
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  border: 1.5px solid transparent;
+  user-select: none;
+}
 
-  .home-footer { font-size: 0.72rem; color: var(--text-muted); text-align: center; }
-  .home-footer button {
-    background: none; border: none; color: #e05555; font-size: 0.72rem;
-    cursor: pointer; text-decoration: underline; padding: 0;
-  }
+.pack-card.boy  { border-color: rgba(26,111,212,0.3); }
+.pack-card.girl { border-color: rgba(196,64,112,0.3); }
 
-  /* ── PACK OPEN SCREEN ── */
-  #pack-screen {
-    background: var(--bg-dark);
-    padding: 16px 16px 40px;
-    gap: 16px;
-    justify-content: flex-start;
-    overflow-y: auto;
-    padding-top: 20px;
-    -webkit-overflow-scrolling: touch;
-  }
+.pack-card.boy:hover  { transform: translateY(-4px); box-shadow: 0 0 40px rgba(26,111,212,0.25); border-color: rgba(26,111,212,0.6); }
+.pack-card.girl:hover { transform: translateY(-4px); box-shadow: 0 0 40px rgba(196,64,112,0.25); border-color: rgba(196,64,112,0.6); }
 
-  #pack-screen.theme-boy {
-    background: radial-gradient(ellipse at 50% 30%, #0d2040 0%, var(--bg-dark) 70%);
-  }
-  #pack-screen.theme-girl {
-    background: radial-gradient(ellipse at 50% 30%, #40091e 0%, var(--bg-dark) 70%);
-  }
+.pack-card.selected.boy  { border-color: var(--boy-primary);  box-shadow: 0 0 40px rgba(26,111,212,0.35); }
+.pack-card.selected.girl { border-color: var(--girl-primary); box-shadow: 0 0 40px rgba(196,64,112,0.35); }
 
-  .pack-screen-header {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    max-width: 420px;
-  }
-  .back-btn {
-    background: rgba(255,255,255,0.08);
-    border: none;
-    color: var(--text-light);
-    font-size: 0.85rem;
-    padding: 8px 14px;
-    border-radius: 20px;
-    cursor: pointer;
-    transition: background 0.2s;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .back-btn:hover { background: rgba(255,255,255,0.14); }
+.pack-card-icon { font-size: 2.8rem; margin-bottom: 14px; }
 
-  .pack-screen-title { font-size: 1rem; font-weight: 700; }
+.pack-card-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  margin-bottom: 6px;
+}
+.pack-card.boy  .pack-card-name { color: var(--boy-primary); }
+.pack-card.girl .pack-card-name { color: var(--girl-primary); }
 
-  .sound-btn {
-    background: rgba(255,255,255,0.08);
-    border: none;
-    color: var(--text-light);
-    font-size: 0.85rem;
-    padding: 8px 14px;
-    border-radius: 20px;
-    cursor: pointer;
-    transition: background 0.2s;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .sound-btn:hover { background: rgba(255,255,255,0.14); }
+.pack-card-count { font-size: 0.78rem; color: var(--text-muted); }
 
-  /* ── THE PACK ── */
-  #pack-stage {
-    width: 220px;
-    height: 300px;
-    position: relative;
-    flex-shrink: 0;
-  }
+/* ─── OPEN BUTTON ─── */
+.open-pack-btn {
+  display: none;
+  margin: 0 auto 40px;
+  padding: 16px 52px;
+  font-size: 1.05rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.2s;
+}
+.open-pack-btn.visible { display: block; }
+.open-pack-btn.boy-btn  { background: linear-gradient(135deg,#1a6fd4,#3a8ff4); color:#000; box-shadow: 0 0 30px rgba(26,111,212,0.45); }
+.open-pack-btn.girl-btn { background: linear-gradient(135deg,#c44070,#e06090); color:#fff; box-shadow: 0 0 30px rgba(196,64,112,0.45); }
+.open-pack-btn:hover { transform: scale(1.05); }
 
-  .pack-wrapper {
-    width: 100%;
-    height: 100%;
-    position: relative;
-    border-radius: 20px;
-    overflow: hidden;
-    cursor: grab;
-    user-select: none;
-  }
+/* ─── PRIZE LIST ─── */
+.prize-list-section { width: 100%; display: none; }
+.prize-list-section.visible { display: block; }
 
-  .pack-front, .pack-back {
-    position: absolute;
-    inset: 0;
-    border-radius: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    transition: clip-path 0.05s linear;
-  }
+.prize-list-header {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+  text-align: center;
+}
 
-  .pack-front.theme-boy {
-    background: linear-gradient(160deg, #1a5fa0 0%, #0d3060 40%, #061830 100%);
-    border: 2px solid rgba(77,166,255,0.4);
-    box-shadow: 0 0 40px rgba(26,111,191,0.5), inset 0 0 60px rgba(0,0,0,0.3);
-  }
-  .pack-front.theme-girl {
-    background: linear-gradient(160deg, #e8469a 0%, #a0205a 40%, #580a2a 100%);
-    border: 2px solid rgba(255,180,215,0.4);
-    box-shadow: 0 0 40px rgba(232,70,154,0.5), inset 0 0 60px rgba(0,0,0,0.3);
-  }
+.tier-group { margin-bottom: 22px; }
 
-  .pack-front .pack-emoji { font-size: 3.5rem; }
-  .pack-front .pack-label {
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    opacity: 0.7;
-  }
-  .pack-front .pack-name-big {
-    font-size: 1.4rem;
-    font-weight: 800;
-    text-align: center;
-    padding: 0 12px;
-    line-height: 1.2;
-  }
-  .pack-front .pack-shine {
-    position: absolute;
-    inset: 0;
-    border-radius: 20px;
-    background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 50%, rgba(255,255,255,0.05) 100%);
-    pointer-events: none;
-  }
+.tier-label-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.tier-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.tier-label { font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.06em; }
+.tier-chance { font-size: 0.78rem; color: var(--text-muted); margin-left: auto; }
 
-  /* Knife indicator */
-  .slice-hint {
-    position: absolute;
-    bottom: 16px;
-    left: 0; right: 0;
-    text-align: center;
-    font-size: 0.72rem;
-    color: rgba(255,255,255,0.5);
-    pointer-events: none;
-    animation: pulse-hint 2s ease-in-out infinite;
-  }
-  @keyframes pulse-hint { 0%,100% { opacity: 0.5 } 50% { opacity: 1 } }
+.tier-prizes { display: flex; flex-direction: column; gap: 6px; padding-left: 18px; }
 
-  /* Slice line that follows the drag */
-  #slice-line {
-    position: absolute;
-    top: 0; bottom: 0;
-    width: 3px;
-    background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.9), transparent);
-    pointer-events: none;
-    opacity: 0;
-    transform: translateX(-50%);
-    filter: blur(1px);
-    box-shadow: 0 0 8px rgba(255,255,255,0.8);
-    border-radius: 4px;
-  }
+.prize-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+.prize-emoji { font-size: 1.25rem; flex-shrink: 0; line-height: 1.4; }
+.prize-info { flex: 1; }
+.prize-name { font-size: 0.88rem; font-weight: 600; }
+.prize-desc { font-size: 0.76rem; color: var(--text-muted); margin-top: 2px; line-height: 1.4; }
 
-  /* Pack halves after cut */
-  .pack-half {
-    position: absolute;
-    top: 0;
-    width: 50%;
-    height: 100%;
-    overflow: hidden;
-    transition: transform 0.5s cubic-bezier(0.34,1.56,0.64,1);
-  }
-  .pack-half.left { left: 0; transform-origin: left center; }
-  .pack-half.right { right: 0; transform-origin: right center; }
-  .pack-half.left.flung { transform: translateX(-120%) rotate(-15deg); }
-  .pack-half.right.flung { transform: translateX(120%) rotate(15deg); }
-  .pack-half .half-inner {
-    position: absolute;
-    top: 0;
-    height: 100%;
-  }
-  .pack-half.left .half-inner { left: 0; width: 200%; }
-  .pack-half.right .half-inner { right: 0; width: 200%; }
+/* ─── PACK SCREEN ─── */
+#pack-screen {
+  display: none;
+  width: 100%;
+  max-width: 680px;
+  padding: 28px 20px 60px;
+  flex-direction: column;
+  align-items: center;
+}
 
-  /* ── PRIZE REVEAL ── */
-  #prize-reveal {
-    display: none;
-    flex-direction: column;
-    align-items: center;
-    gap: 16px;
-    text-align: center;
-    animation: prize-pop 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
-  }
-  #prize-reveal.visible { display: flex; }
-  @keyframes prize-pop {
-    0% { opacity: 0; transform: scale(0.5) translateY(20px); }
-    100% { opacity: 1; transform: scale(1) translateY(0); }
-  }
+.back-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  cursor: pointer;
+  align-self: flex-start;
+  padding: 4px 0;
+  margin-bottom: 18px;
+  transition: color 0.2s;
+  letter-spacing: 0.02em;
+}
+.back-btn:hover { color: var(--text-light); }
 
-  .prize-tier-badge {
-    font-size: 0.7rem;
-    font-weight: 800;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    padding: 5px 14px;
-    border-radius: 20px;
-  }
-  .prize-tier-badge.common      { background: rgba(170,170,204,0.2); color: var(--common-color);      border: 1px solid rgba(170,170,204,0.3); }
-  .prize-tier-badge.uncommon    { background: rgba(77,204,136,0.15); color: var(--uncommon-color);    border: 1px solid rgba(77,204,136,0.35); }
-  .prize-tier-badge.rare        { background: rgba(77,166,255,0.2);  color: var(--rare-color);        border: 1px solid rgba(77,166,255,0.4); }
-  .prize-tier-badge.familyevent { background: rgba(255,159,67,0.15); color: var(--familyevent-color); border: 1px solid rgba(255,159,67,0.4); animation: glow-orange 1.5s ease-in-out infinite; }
+.pack-screen-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 28px;
+  text-align: center;
+}
+#pack-screen.theme-boy  .pack-screen-title { color: var(--boy-primary); }
+#pack-screen.theme-girl .pack-screen-title { color: var(--girl-primary); }
 
-  @keyframes glow-orange {
-    0%,100% { box-shadow: 0 0 8px rgba(255,159,67,0.3); }
-    50% { box-shadow: 0 0 20px rgba(255,159,67,0.7); }
-  }
+/* ─── STAGE SCENE ─── */
+.pack-scene {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 100%;
+  margin-bottom: 28px;
+}
 
-  /* ── WHAT'S INSIDE ── */
-  .whats-inside {
-    width: 100%;
-    max-width: 420px;
-    margin-top: 8px;
-  }
-  .whats-inside-title {
-    font-size: 0.65rem;
-    font-weight: 800;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    text-align: center;
-    margin-bottom: 12px;
-  }
-  .wi-tier {
-    margin-bottom: 14px;
-  }
-  .wi-tier-header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 8px;
-  }
-  .wi-tier-name {
-    font-size: 0.7rem;
-    font-weight: 800;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-  }
-  .wi-tier-name.common      { color: var(--common-color); }
-  .wi-tier-name.uncommon    { color: var(--uncommon-color); }
-  .wi-tier-name.rare        { color: var(--rare-color); }
-  .wi-tier-name.familyevent { color: var(--familyevent-color); }
-  .wi-tier-chance {
-    font-size: 0.65rem;
-    color: var(--text-muted);
-    background: rgba(255,255,255,0.06);
-    padding: 2px 8px;
-    border-radius: 10px;
-  }
-  .wi-prizes {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-  .wi-prize {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: rgba(255,255,255,0.04);
-    border-radius: 12px;
-    padding: 8px 12px;
-  }
-  .wi-prize-emoji { font-size: 1.3rem; flex-shrink: 0; }
-  .wi-prize-info { display: flex; flex-direction: column; gap: 1px; }
-  .wi-prize-name { font-size: 0.8rem; font-weight: 700; }
-  .wi-prize-desc { font-size: 0.7rem; color: var(--text-muted); line-height: 1.4; }
-  .wi-divider {
-    height: 1px;
-    background: rgba(255,255,255,0.06);
-    margin: 4px 0 14px;
-  }
+.scene-pillar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
 
-  .prize-emoji { font-size: 4.5rem; line-height: 1; animation: prize-pop 0.6s 0.1s cubic-bezier(0.34,1.56,0.64,1) both; }
-  .prize-name { font-size: 1.5rem; font-weight: 800; line-height: 1.2; animation: prize-pop 0.6s 0.15s cubic-bezier(0.34,1.56,0.64,1) both; }
-  .prize-desc { font-size: 0.85rem; color: var(--text-muted); max-width: 240px; animation: prize-pop 0.6s 0.2s cubic-bezier(0.34,1.56,0.64,1) both; }
+.scene-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
 
-  .prize-actions {
-    display: flex;
-    gap: 12px;
-    margin-top: 4px;
-    animation: prize-pop 0.6s 0.3s cubic-bezier(0.34,1.56,0.64,1) both;
-  }
-  .btn-primary {
-    padding: 12px 24px;
-    border: none;
-    border-radius: 30px;
-    font-size: 0.9rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: transform 0.15s, box-shadow 0.15s;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .btn-primary:active { transform: scale(0.95); }
-  .btn-primary.theme-boy { background: linear-gradient(135deg, var(--boy-primary), var(--boy-secondary)); color: #fff; box-shadow: 0 4px 16px rgba(26,111,191,0.4); }
-  .btn-primary.theme-girl { background: linear-gradient(135deg, var(--girl-primary), var(--girl-secondary)); color: #fff; box-shadow: 0 4px 16px rgba(192,79,214,0.4); }
-  .btn-primary:hover { transform: translateY(-2px); }
-  .btn-primary:active { transform: scale(0.95) translateY(0); }
+.scene-platform {
+  height: 16px;
+  width: 100%;
+  border-radius: 6px 6px 2px 2px;
+  background: linear-gradient(180deg, #1e1e1e 0%, #111 100%);
+  border-top: 1px solid rgba(255,255,255,0.07);
+}
 
-  .btn-secondary {
-    padding: 12px 20px;
-    border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 30px;
-    background: transparent;
-    color: var(--text-light);
-    font-size: 0.9rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.2s, transform 0.15s;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .btn-secondary:hover { background: rgba(255,255,255,0.08); }
-  .btn-secondary:active { transform: scale(0.95); }
+/* ── Hudson — Police Theme ── */
+@keyframes sirenPulse {
+  0%   { box-shadow: -8px 0 18px rgba(26,111,212,0.9), 8px 0 8px rgba(204,26,26,0.3), 0 0 24px rgba(26,111,212,0.6); }
+  50%  { box-shadow: -8px 0 12px rgba(26,111,212,0.4), 8px 0 18px rgba(204,26,26,0.9), 0 0 24px rgba(204,26,26,0.6); }
+  100% { box-shadow: -8px 0 18px rgba(26,111,212,0.9), 8px 0 8px rgba(204,26,26,0.3), 0 0 24px rgba(26,111,212,0.6); }
+}
+.theme-boy .pillar-top {
+  width: 68px; height: 20px;
+  border-radius: 5px 5px 3px 3px;
+  background: linear-gradient(90deg, #0a3a8a 0%, #1055cc 48%, #cc1a1a 52%, #8a0a0a 100%);
+  border: 1.5px solid rgba(255,255,255,0.25);
+  position: relative; margin-bottom: 3px;
+  animation: sirenPulse 1.4s ease-in-out infinite;
+}
+.theme-boy .pillar-top::before {
+  content: ''; position: absolute;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: radial-gradient(circle at 40% 40%, #88bbff, #1a6fd4);
+  top: 50%; transform: translateY(-50%); left: 8px;
+  box-shadow: 0 0 8px rgba(26,111,212,0.9);
+}
+.theme-boy .pillar-top::after {
+  content: ''; position: absolute;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: radial-gradient(circle at 40% 40%, #ffaaaa, #cc1a1a);
+  top: 50%; transform: translateY(-50%); right: 8px;
+  box-shadow: 0 0 8px rgba(204,26,26,0.9);
+}
+.theme-boy .pillar-body {
+  width: 26px; height: 210px;
+  border-radius: 3px;
+  display: flex; flex-direction: column; align-items: flex-end;
+  justify-content: space-evenly; padding: 16px 0;
+  background: linear-gradient(90deg, #070d1a 0%, #0e1c38 40%, #122040 70%, #070d1a 100%);
+  border-left: 2px solid rgba(26,111,212,0.2);
+  border-right: 2px solid rgba(26,111,212,0.2);
+}
+.theme-boy .pillar-detail {
+  width: 28px; height: 9px;
+  border-radius: 0 3px 3px 0;
+  background: linear-gradient(90deg, rgba(26,111,212,0.5) 0%, rgba(26,111,212,0.12) 70%, transparent 100%);
+  border-top: 1px solid rgba(26,111,212,0.25);
+  border-bottom: 1px solid rgba(26,111,212,0.1);
+  margin-right: -4px;
+}
+.theme-boy .pillar-detail:nth-child(even) {
+  border-radius: 3px 0 0 3px;
+  background: linear-gradient(270deg, rgba(26,111,212,0.5) 0%, rgba(26,111,212,0.12) 70%, transparent 100%);
+  margin-right: 0; margin-left: -4px; align-self: flex-start;
+}
+.theme-boy .pillar-foot {
+  width: 36px; height: 10px;
+  border-radius: 2px 2px 4px 4px;
+  background: linear-gradient(180deg, #0e1c38 0%, #050a14 100%);
+  border: 1px solid rgba(26,111,212,0.2);
+  border-top: none;
+}
 
-  /* ── INSTRUCTION ── */
-  .open-instruction {
-    font-size: 0.8rem;
-    color: rgba(255,255,255,0.4);
-    text-align: center;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .open-instruction span { animation: slide-arrow 1.5s ease-in-out infinite; display: inline-block; }
-  @keyframes slide-arrow { 0%,100% { transform: translateX(0); } 50% { transform: translateX(6px); } }
+/* ── Monroe — Garden Flowers ── */
+.theme-girl .pillar-top {
+  width: 48px; height: 48px; border-radius: 50%;
+  background: radial-gradient(circle at 42% 38%, #f8a0c8 0%, #d04888 45%, #8a1840 100%);
+  border: 1.5px solid rgba(240,140,190,0.45);
+  box-shadow: 0 0 18px rgba(196,64,112,0.7), 0 0 36px rgba(196,64,112,0.3), 0 0 0 7px rgba(196,64,112,0.08);
+  position: relative; margin-bottom: 2px;
+}
+.theme-girl .pillar-top::before {
+  content: ''; position: absolute;
+  width: 20px; height: 28px; border-radius: 50%;
+  background: radial-gradient(ellipse at 60% 50%, rgba(220,80,130,0.6) 0%, rgba(160,40,90,0.3) 100%);
+  top: 50%; transform: translateY(-50%); left: -13px;
+}
+.theme-girl .pillar-top::after {
+  content: ''; position: absolute;
+  width: 20px; height: 28px; border-radius: 50%;
+  background: radial-gradient(ellipse at 40% 50%, rgba(220,80,130,0.6) 0%, rgba(160,40,90,0.3) 100%);
+  top: 50%; transform: translateY(-50%); right: -13px;
+}
+.theme-girl .pillar-body {
+  width: 10px; height: 210px; border-radius: 4px;
+  background: linear-gradient(90deg, #1a4018 0%, #2e6828 50%, #1a4018 100%);
+  display: flex; flex-direction: column; align-items: flex-end;
+  justify-content: space-evenly; padding: 14px 0;
+}
+.theme-girl .pillar-detail {
+  width: 26px; height: 12px;
+  border-radius: 0 50% 50% 0;
+  background: linear-gradient(90deg, #1e5020 0%, #348030 60%, rgba(30,80,20,0) 100%);
+  margin-right: -4px;
+}
+.theme-girl .pillar-detail:nth-child(even) {
+  border-radius: 50% 0 0 50%;
+  background: linear-gradient(270deg, #1c4a1e 0%, #2e7028 60%, rgba(25,70,15,0) 100%);
+  margin-right: 0; margin-left: -4px; align-self: flex-start;
+}
+.theme-girl .pillar-foot {
+  width: 20px; height: 12px; border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 30%, #1e3010 0%, #0e1808 100%);
+}
 
-  /* ── CONFETTI ── */
-  #confetti-canvas {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 100;
-  }
+/* ─── SPIN WHEEL ─── */
+#pack-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 0 8px;
+}
 
-  /* ── Pack count ── */
-  .pack-stat {
-    font-size: 0.72rem;
-    color: var(--text-muted);
-    background: rgba(255,255,255,0.05);
-    padding: 5px 14px;
-    border-radius: 20px;
-  }
-  .pack-stat strong { color: var(--text-light); }
+.wheel-wrapper {
+  position: relative;
+  width: 300px; height: 300px;
+}
 
-  /* Tier breakdown hint */
-  .tier-hint {
-    font-size: 0.68rem;
-    color: var(--text-muted);
-    text-align: center;
-    max-width: 260px;
-    line-height: 1.6;
-  }
-  .tier-hint .c { color: var(--common-color); }
-  .tier-hint .r { color: var(--rare-color); }
-  .tier-hint .sr { color: var(--superrare-color); }
+#wheel-canvas {
+  display: block;
+  border-radius: 50%;
+}
+
+.wheel-pointer {
+  position: absolute;
+  top: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0; height: 0;
+  border-left: 13px solid transparent;
+  border-right: 13px solid transparent;
+  border-top: 28px solid #ffffff;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.6));
+  z-index: 10;
+}
+
+.wheel-center-dot {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 3px solid #111;
+  z-index: 10;
+  box-shadow: 0 0 10px rgba(255,255,255,0.4);
+}
+
+.theme-boy  .wheel-wrapper { filter: drop-shadow(0 0 22px rgba(200,134,26,0.55)); }
+.theme-girl .wheel-wrapper { filter: drop-shadow(0 0 22px rgba(196,64,112,0.55)); }
+
+/* ─── SPIN BUTTON ─── */
+.spin-btn {
+  margin-top: 28px;
+  padding: 15px 60px;
+  font-size: 1.05rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.2s, opacity 0.2s;
+}
+.spin-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none !important; }
+.spin-btn:not(:disabled):hover { transform: scale(1.06); }
+
+.theme-boy  .spin-btn { background: linear-gradient(135deg,#1a6fd4,#3a8ff4); color:#000; box-shadow: 0 0 28px rgba(26,111,212,0.5); }
+.theme-girl .spin-btn { background: linear-gradient(135deg,#c44070,#e06090); color:#fff; box-shadow: 0 0 28px rgba(196,64,112,0.5); }
+
+/* ─── PRIZE REVEAL ─── */
+#prize-reveal {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 32px 28px;
+  background: var(--bg-card);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 420px;
+  margin-top: 24px;
+  border: 1px solid rgba(255,255,255,0.07);
+}
+#prize-reveal.visible { display: flex; }
+
+.reveal-tier {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 5px 18px;
+  border-radius: 20px;
+  margin-bottom: 18px;
+}
+
+.reveal-emoji { font-size: 4rem; margin-bottom: 12px; line-height: 1; }
+.reveal-name  { font-size: 1.55rem; font-weight: 800; margin-bottom: 8px; }
+.reveal-desc  { font-size: 0.92rem; color: var(--text-muted); margin-bottom: 28px; line-height: 1.5; }
+
+.again-btn {
+  padding: 13px 44px;
+  font-size: 0.95rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  margin-bottom: 10px;
+  transition: transform 0.15s;
+}
+.again-btn:hover { transform: scale(1.04); }
+
+.theme-boy  #prize-reveal .again-btn { background: linear-gradient(135deg,#1a6fd4,#3a8ff4); color:#000; }
+.theme-girl #prize-reveal .again-btn { background: linear-gradient(135deg,#c44070,#e06090); color:#fff; }
+
+.home-btn {
+  background: none;
+  border: 1px solid rgba(255,255,255,0.15);
+  color: var(--text-muted);
+  padding: 10px 32px;
+  border-radius: 50px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  transition: border-color 0.2s, color 0.2s;
+}
+.home-btn:hover { border-color: rgba(255,255,255,0.4); color: var(--text-light); }
+
+/* ─── CONFETTI ─── */
+#confetti-canvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 999;
+}
 </style>
 </head>
 <body>
 
+<!-- ═══ HOME SCREEN ═══ -->
+<div id="home-screen">
+  <h1 class="site-title">Prize Packs</h1>
+  <p class="site-subtitle">Pick your pack and spin to win</p>
+
+  <div class="pack-grid">
+    <div class="pack-card boy" onclick="selectPack('boy')">
+      <div class="pack-card-icon">🚔</div>
+      <div class="pack-card-name">Hudson's Pack</div>
+      <div class="pack-card-count" id="boy-count">0 packs opened</div>
+    </div>
+    <div class="pack-card girl" onclick="selectPack('girl')">
+      <div class="pack-card-icon">🌸</div>
+      <div class="pack-card-name">Monroe's Pack</div>
+      <div class="pack-card-count" id="girl-count">0 packs opened</div>
+    </div>
+  </div>
+
+  <button class="open-pack-btn" id="open-pack-btn" onclick="goToPackScreen()">Spin the Wheel</button>
+
+  <div class="prize-list-section" id="prize-list-section">
+    <div class="prize-list-header">What's Inside</div>
+    <div id="prize-list-content"></div>
+  </div>
+</div>
+
+<!-- ═══ PACK SCREEN ═══ -->
+<div id="pack-screen">
+  <button class="back-btn" onclick="goHome()">← Back to Packs</button>
+  <div class="pack-screen-title" id="pack-screen-title">Hudson's Pack</div>
+
+  <div class="pack-scene">
+    <!-- Left pillar -->
+    <div class="scene-pillar">
+      <div class="pillar-top"></div>
+      <div class="pillar-body">
+        <div class="pillar-detail"></div>
+        <div class="pillar-detail"></div>
+        <div class="pillar-detail"></div>
+      </div>
+      <div class="pillar-foot"></div>
+    </div>
+
+    <!-- Center: wheel + platform -->
+    <div class="scene-center">
+      <div id="pack-stage">
+        <div class="wheel-wrapper" id="wheel-wrapper">
+          <canvas id="wheel-canvas" width="300" height="300"></canvas>
+          <div class="wheel-pointer"></div>
+          <div class="wheel-center-dot"></div>
+        </div>
+        <button class="spin-btn" id="spin-btn" onclick="startSpin()">Spin!</button>
+      </div>
+      <div class="scene-platform"></div>
+    </div>
+
+    <!-- Right pillar -->
+    <div class="scene-pillar">
+      <div class="pillar-top"></div>
+      <div class="pillar-body">
+        <div class="pillar-detail"></div>
+        <div class="pillar-detail"></div>
+        <div class="pillar-detail"></div>
+      </div>
+      <div class="pillar-foot"></div>
+    </div>
+  </div>
+
+  <!-- Prize reveal -->
+  <div id="prize-reveal">
+    <div class="reveal-tier" id="reveal-tier"></div>
+    <div class="reveal-emoji" id="reveal-emoji"></div>
+    <div class="reveal-name" id="reveal-name"></div>
+    <div class="reveal-desc" id="reveal-desc"></div>
+    <button class="again-btn" onclick="resetSpin()">Spin Again</button>
+    <button class="home-btn" onclick="goHome()">Back to Packs</button>
+  </div>
+</div>
+
 <canvas id="confetti-canvas"></canvas>
 
-<!-- ═══════════════════════════════════════
-     HOME SCREEN
-═══════════════════════════════════════ -->
-<div id="home-screen" class="screen">
-  <h1>Prize Packs <span>Choose your pack to open</span></h1>
-
-  <div class="pack-selector">
-    <!-- BOY PACK -->
-    <div class="pack-card boy" onclick="selectPack('boy')" role="button" tabindex="0" aria-label="Open Hudson's Pack">
-      <div class="pack-icon">🦕</div>
-      <div class="pack-name">Hudson's Pack</div>
-      <div class="pack-sub">For the little explorer</div>
-      <div class="pack-count" id="boy-count">0 opened</div>
-    </div>
-
-    <!-- GIRL PACK -->
-    <div class="pack-card girl" onclick="selectPack('girl')" role="button" tabindex="0" aria-label="Open Monroe's Pack">
-      <div class="pack-icon">🌸</div>
-      <div class="pack-name">Monroe's Pack</div>
-      <div class="pack-sub">For the little flower lover</div>
-      <div class="pack-count" id="girl-count">0 opened</div>
-    </div>
-  </div>
-
-  <div class="tier-hint">
-    <span class="c">●</span> Common (60%) &nbsp;
-    <span class="r">●</span> Rare (30%) &nbsp;
-    <span class="sr">●</span> Super Rare (10%)
-  </div>
-
-  <div class="home-footer">
-    Edit prizes near the top of the &lt;script&gt; tag &nbsp;·&nbsp;
-    <button onclick="resetProgress()">reset progress</button>
-  </div>
-</div>
-
-<!-- ═══════════════════════════════════════
-     PACK OPEN SCREEN
-═══════════════════════════════════════ -->
-<div id="pack-screen" class="screen hidden">
-  <div class="pack-screen-header">
-    <button class="back-btn" onclick="goHome()">← Back</button>
-    <div class="pack-screen-title" id="pack-screen-title">Dino Pack</div>
-    <button class="sound-btn" id="sound-btn" onclick="toggleSound()">🔊</button>
-  </div>
-
-  <!-- Pack stage (slice zone) -->
-  <div id="pack-stage">
-    <div class="pack-wrapper" id="pack-wrapper">
-      <div class="pack-front" id="pack-front">
-        <div class="pack-shine"></div>
-        <div class="pack-label">PRIZE PACK</div>
-        <div class="pack-emoji" id="pack-emoji">🦕</div>
-        <div class="pack-name-big" id="pack-name-big">Dino Pack</div>
-        <div class="slice-hint">↔ Drag to slice open</div>
-      </div>
-      <div id="slice-line"></div>
-    </div>
-  </div>
-
-  <div class="open-instruction" id="open-instruction">
-    <span>→</span> Drag your finger across the pack <span>←</span>
-  </div>
-
-  <!-- Prize reveal (hidden until pack opened) -->
-  <div id="prize-reveal">
-    <div class="prize-tier-badge" id="prize-tier-badge">COMMON</div>
-    <div class="prize-emoji" id="prize-emoji">🎉</div>
-    <div class="prize-name" id="prize-name">Prize Name</div>
-    <div class="prize-desc" id="prize-desc">Prize description goes here.</div>
-    <div class="prize-actions">
-      <button class="btn-primary" id="next-pack-btn" onclick="nextPack()">Open Another Pack 🎁</button>
-      <button class="btn-secondary" onclick="goHome()">Home</button>
-    </div>
-  </div>
-
-  <div class="pack-stat" id="pack-stat">Opened: <strong>0</strong> packs</div>
-
-  <!-- What's Inside -->
-  <div class="whats-inside" id="whats-inside">
-    <div class="wi-divider"></div>
-    <div class="whats-inside-title">What's Inside</div>
-    <div id="wi-content"><!-- populated by JS --></div>
-  </div>
-</div>
-
 <script>
-// ════════════════════════════════════════════════════════
-//  PRIZE CONFIG — edit these to customize prizes!
-// ════════════════════════════════════════════════════════
-
+// ═══ PRIZES ═══
 const PRIZES = {
   boy: {
     common: [
-      { emoji: '🍬', name: 'Candy or Gum',          desc: 'Pick candy or a pack of gum.' },
+      { emoji: '🍬', name: 'Candy or Gum', desc: 'Pick candy or a piece of gum.' },
     ],
     uncommon: [
-      { emoji: '🟡', name: 'Pokémon Pack',          desc: 'Open a fresh Pokémon booster!' },
-      { emoji: '🏈', name: 'NFL Card Pack',          desc: 'Rip open an NFL card pack.' },
-      { emoji: '⛽', name: 'Gas Station Run',        desc: 'A trip to the gas station for a treat.' },
+      { emoji: '📺', name: 'Watch a Show', desc: 'Watch a show at some point during the day.' },
+      { emoji: '🎁', name: 'Prize Box', desc: 'Pick a prize from the prize box.' },
+      { emoji: '⛽', name: 'Gas Station Run', desc: 'A trip to the gas station for a treat.' },
+      { emoji: '🌙', name: 'Stay Up Late', desc: 'Stay up 30 minutes past bedtime.' },
+      { emoji: '🎲', name: 'Family Game Night', desc: 'Pick a game to play with the family.' },
     ],
     rare: [
-      { emoji: '💵', name: '$20 Shopping Spree',    desc: '$20 to spend at ANY store you pick!' },
-      { emoji: '✨', name: 'Double Prize!',          desc: 'Open another pack — that prize counts DOUBLE!' },
+      { emoji: '🍽️', name: 'Pick Dinner', desc: 'Pick what we eat for dinner.' },
+      { emoji: '📱', name: 'iPad Time', desc: 'Get 30 minutes of iPad time.' },
+      { emoji: '🍪', name: 'Swig Cookie & Drink', desc: 'Go get a cookie and drink from Swig.' },
     ],
     familyevent: [
-      { emoji: '🎳', name: 'Family Bowling Night',  desc: 'Pick the day — the whole family goes bowling!' },
-      { emoji: '🎢', name: 'Day/Night at Lagoon',    desc: 'A full day or night out at Lagoon — rides, fun, the whole thing!' },
-      { emoji: '🎬', name: 'Movie Night Pick',       desc: 'You choose the movie for family movie night.' },
-      { emoji: '🍕', name: 'Pizza & Pick Night',    desc: 'Pizza dinner and you pick the family activity.' },
-      { emoji: '🎟️', name: 'Your Choice Outing',   desc: 'Pick ANY family event you want — your call!' },
+      { emoji: '🎳', name: 'Family Bowling Night', desc: 'Pick the day — the whole family goes bowling!' },
+      { emoji: '🎢', name: 'Day/Night at Lagoon', desc: 'A full day or night out at Lagoon — rides, fun, the whole thing!' },
+      { emoji: '🎬', name: 'Movie Night Pick', desc: 'You choose the movie for family movie night.' },
+      { emoji: '🍕', name: 'Pizza Night', desc: 'Pizza dinner and you pick the family activity.' },
+      { emoji: '🎟️', name: 'Your Choice Outing', desc: 'Pick ANY family event you want — your call!' },
     ],
   },
   girl: {
     common: [
-      { emoji: '🍬', name: 'Candy or Gum',          desc: 'Pick candy or a pack of gum.' },
+      { emoji: '🍬', name: 'Candy or Gum', desc: 'Pick candy or a piece of gum.' },
     ],
     uncommon: [
-      { emoji: '🟡', name: 'Pokémon Pack',          desc: 'Open a fresh Pokémon booster!' },
-      { emoji: '🏈', name: 'NFL Card Pack',          desc: 'Rip open an NFL card pack.' },
-      { emoji: '⛽', name: 'Gas Station Run',        desc: 'A trip to the gas station for a treat.' },
+      { emoji: '📺', name: 'Watch a Show', desc: 'Watch a show at some point during the day.' },
+      { emoji: '🎁', name: 'Prize Box', desc: 'Pick a prize from the prize box.' },
+      { emoji: '⛽', name: 'Gas Station Run', desc: 'A trip to the gas station for a treat.' },
+      { emoji: '🌙', name: 'Stay Up Late', desc: 'Stay up 30 minutes past bedtime.' },
+      { emoji: '🎲', name: 'Family Game Night', desc: 'Pick a game to play with the family.' },
     ],
     rare: [
-      { emoji: '💵', name: '$20 Shopping Spree',    desc: '$20 to spend at ANY store you pick!' },
-      { emoji: '✨', name: 'Double Prize!',          desc: 'Open another pack — that prize counts DOUBLE!' },
+      { emoji: '🍽️', name: 'Pick Dinner', desc: 'Pick what we eat for dinner.' },
+      { emoji: '📱', name: 'iPad Time', desc: 'Get 30 minutes of iPad time.' },
+      { emoji: '🍪', name: 'Swig Cookie & Drink', desc: 'Go get a cookie and drink from Swig.' },
     ],
     familyevent: [
-      { emoji: '🎳', name: 'Family Bowling Night',  desc: 'Pick the day — the whole family goes bowling!' },
-      { emoji: '🎢', name: 'Day/Night at Lagoon',    desc: 'A full day or night out at Lagoon — rides, fun, the whole thing!' },
-      { emoji: '🎬', name: 'Movie Night Pick',       desc: 'You choose the movie for family movie night.' },
-      { emoji: '🍕', name: 'Pizza & Pick Night',    desc: 'Pizza dinner and you pick the family activity.' },
-      { emoji: '🎟️', name: 'Your Choice Outing',   desc: 'Pick ANY family event you want — your call!' },
+      { emoji: '🎳', name: 'Family Bowling Night', desc: 'Pick the day — the whole family goes bowling!' },
+      { emoji: '🎢', name: 'Day/Night at Lagoon', desc: 'A full day or night out at Lagoon — rides, fun, the whole thing!' },
+      { emoji: '🎬', name: 'Movie Night Pick', desc: 'You choose the movie for family movie night.' },
+      { emoji: '🍕', name: 'Pizza Night', desc: 'Pizza dinner and you pick the family activity.' },
+      { emoji: '🎟️', name: 'Your Choice Outing', desc: 'Pick ANY family event you want — your call!' },
     ],
-  },
+  }
 };
 
-// Drop rates (must sum to 1.0)
-const TIER_RATES = { common: 0.53, uncommon: 0.30, rare: 0.10, familyevent: 0.07 };
-
-// Tier display config
+// ═══ TIER CONFIG ═══
+const TIER_RATES = { common: 0.55, uncommon: 0.30, rare: 0.10, familyevent: 0.05 };
 const TIER_META = {
-  common:      { label: 'Common',       chance: '53%' },
-  uncommon:    { label: 'Uncommon',     chance: '30%' },
-  rare:        { label: 'Rare',         chance: '10%' },
-  familyevent: { label: 'Family Event', chance: '7%'  },
+  common:      { label: 'Common',       chance: '55%', color: '#888880' },
+  uncommon:    { label: 'Uncommon',     chance: '30%', color: '#4dcc88' },
+  rare:        { label: 'Rare',         chance: '10%', color: '#5aaeff' },
+  familyevent: { label: 'Family Event', chance: '5%',  color: '#f0a030' },
 };
 
-// ════════════════════════════════════════════════════════
-//  STATE
-// ════════════════════════════════════════════════════════
-let state = {
-  soundOn: true,
-  currentPack: null,  // 'boy' | 'girl'
-  counts: { boy: 0, girl: 0 },
-};
+// 20 equal slices of 18° each — all same size visually
+// Counts match exact odds: Common×11=55%, Uncommon×6=30%, Rare×2=10%, FamilyEvent×1=5%
+// Interleaved so no obvious tier grouping
+const SLICE_LAYOUT = [
+  { tier: 'common' },
+  { tier: 'uncommon' },
+  { tier: 'common' },
+  { tier: 'rare' },
+  { tier: 'common' },
+  { tier: 'uncommon' },
+  { tier: 'common' },
+  { tier: 'rare' },
+  { tier: 'common' },
+  { tier: 'uncommon' },
+  { tier: 'common' },
+  { tier: 'familyevent' },
+  { tier: 'common' },
+  { tier: 'uncommon' },
+  { tier: 'common' },
+  { tier: 'uncommon' },
+  { tier: 'common' },
+  { tier: 'uncommon' },
+  { tier: 'common' },
+  { tier: 'common' },
+];
+const SLICE_DEGREES = 18; // 360 / 20
 
-// Load saved counts
-try {
-  const saved = JSON.parse(localStorage.getItem('prizepackState') || '{}');
-  if (saved.counts) state.counts = saved.counts;
-} catch(e) {}
+// Vibrant palette — 20 distinct colors, randomly shuffled each pack open
+const COLOR_PALETTE = [
+  '#FF6B6B','#FFD93D','#6BCB77','#4D96FF','#FF922B',
+  '#CC5DE8','#20C997','#F06595','#74C0FC','#A9E34B',
+  '#FF8787','#FFA94D','#63E6BE','#DA77F2','#38D9A9',
+  '#FF6B9D','#C0EB75','#66D9E8','#FFC078','#8CE99A',
+];
 
-function saveState() {
-  localStorage.setItem('prizepackState', JSON.stringify({ counts: state.counts }));
-}
+let WHEEL_SLICES = []; // built fresh each pack open
 
-// ════════════════════════════════════════════════════════
-//  NAVIGATION
-// ════════════════════════════════════════════════════════
-function selectPack(type) {
-  state.currentPack = type;
-  const theme = type === 'boy' ? 'theme-boy' : 'theme-girl';
-  const emoji = type === 'boy' ? '🦕' : '🌸';
-  const name  = type === 'boy' ? "Hudson's Pack" : "Monroe's Pack";
-  const color = type === 'boy' ? 'var(--boy-primary)' : 'var(--girl-primary)';
-
-  // Set up UI
-  document.getElementById('pack-screen-title').textContent = name;
-  document.getElementById('pack-emoji').textContent = emoji;
-  document.getElementById('pack-name-big').textContent = name;
-  document.getElementById('next-pack-btn').className = `btn-primary ${theme}`;
-
-  const pf = document.getElementById('pack-front');
-  pf.className = `pack-front ${theme}`;
-
-  const ps = document.getElementById('pack-screen');
-  ps.className = `screen ${theme}`;
-
-  updatePackStat();
-  resetPackAnimation();
-  populateWhatsInside(type);
-  showScreen('pack-screen');
-}
-
-function goHome() {
-  showScreen('home-screen');
-  updateHomeCounts();
-}
-
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
-  document.getElementById(id).classList.remove('hidden');
-}
-
-function resetProgress() {
-  if (!confirm('Reset all pack counts? This cannot be undone.')) return;
-  state.counts = { boy: 0, girl: 0 };
-  saveState();
-  updateHomeCounts();
-}
-
-function updateHomeCounts() {
-  document.getElementById('boy-count').textContent = state.counts.boy + ' opened';
-  document.getElementById('girl-count').textContent = state.counts.girl + ' opened';
-}
-
-function updatePackStat() {
-  const n = state.counts[state.currentPack] || 0;
-  document.getElementById('pack-stat').innerHTML = `Opened: <strong>${n}</strong> pack${n !== 1 ? 's' : ''}`;
-}
-
-// ════════════════════════════════════════════════════════
-//  SOUND
-// ════════════════════════════════════════════════════════
-const AudioCtx = window.AudioContext || window.webkitAudioContext;
-let audioCtx = null;
-
-function getAudioCtx() {
-  if (!audioCtx) audioCtx = new AudioCtx();
-  return audioCtx;
-}
-
-function playSliceSound() {
-  if (!state.soundOn) return;
-  try {
-    const ctx = getAudioCtx();
-    const buf = ctx.createBuffer(1, ctx.sampleRate * 0.3, ctx.sampleRate);
-    const data = buf.getChannelData(0);
-    for (let i = 0; i < data.length; i++) {
-      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / data.length, 2) * 0.4;
-    }
-    const src = ctx.createBufferSource();
-    const filter = ctx.createBiquadFilter();
-    filter.type = 'bandpass';
-    filter.frequency.value = 2000 + Math.random() * 2000;
-    filter.Q.value = 0.5;
-    src.buffer = buf;
-    src.connect(filter);
-    filter.connect(ctx.destination);
-    src.start();
-  } catch(e) {}
-}
-
-function playRevealSound(tier) {
-  if (!state.soundOn) return;
-  try {
-    const ctx = getAudioCtx();
-    const notes = tier === 'superrare' ? [523, 659, 784, 1047] : tier === 'rare' ? [440, 554, 659] : [330, 415];
-    notes.forEach((freq, i) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.value = freq;
-      gain.gain.setValueAtTime(0, ctx.currentTime + i * 0.12);
-      gain.gain.linearRampToValueAtTime(0.18, ctx.currentTime + i * 0.12 + 0.04);
-      gain.gain.linearRampToValueAtTime(0, ctx.currentTime + i * 0.12 + 0.22);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(ctx.currentTime + i * 0.12);
-      osc.stop(ctx.currentTime + i * 0.12 + 0.25);
-    });
-  } catch(e) {}
-}
-
-function toggleSound() {
-  state.soundOn = !state.soundOn;
-  document.getElementById('sound-btn').textContent = state.soundOn ? '🔊' : '🔇';
-}
-
-// ════════════════════════════════════════════════════════
-//  PACK ANIMATION
-// ════════════════════════════════════════════════════════
-let isDragging = false;
-let dragStartX = null;
-let dragCurrentX = null;
-let packOpened = false;
-let sliceTriggered = false;
-
-const packWrapper = document.getElementById('pack-wrapper');
-const sliceLine   = document.getElementById('slice-line');
-
-function resetPackAnimation() {
-  packOpened = false;
-  sliceTriggered = false;
-  isDragging = false;
-
-  const pf = document.getElementById('pack-front');
-  pf.style.display = 'flex';
-  pf.style.clipPath = '';
-
-  sliceLine.style.opacity = '0';
-  sliceLine.style.left = '50%';
-
-  document.getElementById('prize-reveal').classList.remove('visible');
-  document.getElementById('open-instruction').style.display = 'flex';
-  document.getElementById('pack-stat').style.display = '';
-
-  // Remove any old halves
-  document.querySelectorAll('.pack-half').forEach(e => e.remove());
-}
-
-function getEventX(e) {
-  if (e.touches && e.touches.length > 0) return e.touches[0].clientX;
-  if (e.changedTouches && e.changedTouches.length > 0) return e.changedTouches[0].clientX;
-  return e.clientX;
-}
-
-function getEventY(e) {
-  if (e.touches && e.touches.length > 0) return e.touches[0].clientY;
-  if (e.changedTouches && e.changedTouches.length > 0) return e.changedTouches[0].clientY;
-  return e.clientY;
-}
-
-packWrapper.addEventListener('mousedown', startDrag, { passive: false });
-packWrapper.addEventListener('touchstart', startDrag, { passive: false });
-window.addEventListener('mousemove', moveDrag, { passive: false });
-window.addEventListener('touchmove', moveDrag, { passive: false });
-window.addEventListener('mouseup', endDrag);
-window.addEventListener('touchend', endDrag);
-
-function startDrag(e) {
-  if (packOpened) return;
-  e.preventDefault();
-  isDragging = true;
-  dragStartX = getEventX(e);
-  dragCurrentX = dragStartX;
-  sliceLine.style.opacity = '1';
-}
-
-function moveDrag(e) {
-  if (!isDragging || packOpened) return;
-  e.preventDefault();
-  dragCurrentX = getEventX(e);
-
-  const rect = packWrapper.getBoundingClientRect();
-  const relX = dragCurrentX - rect.left;
-  const pct = Math.max(0, Math.min(100, (relX / rect.width) * 100));
-
-  sliceLine.style.left = pct + '%';
-
-  // Wobble the pack slightly
-  const delta = dragCurrentX - dragStartX;
-  packWrapper.style.transform = `rotate(${delta * 0.03}deg)`;
-
-  // Trigger slice if dragged far enough
-  const dragDist = Math.abs(delta);
-  if (dragDist > 60 && !sliceTriggered) {
-    sliceTriggered = true;
-    triggerSlice(pct, rect);
+function shuffleArray(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
   }
+  return a;
 }
 
-function endDrag(e) {
-  if (!isDragging) return;
-  isDragging = false;
-  if (!packOpened) {
-    sliceLine.style.opacity = '0';
-    packWrapper.style.transform = '';
-  }
+function initWheelSlices() {
+  const colors = shuffleArray(COLOR_PALETTE);
+  WHEEL_SLICES = SLICE_LAYOUT.map((s, i) => ({
+    tier:    s.tier,
+    degrees: SLICE_DEGREES,
+    color:   colors[i],
+  }));
 }
 
-function triggerSlice(cutPct, rect) {
-  packOpened = true;
-  playSliceSound();
+// ═══ STATE ═══
+const STATE_KEY = 'prizepackState';
+let currentPack  = null;
+let isSpinning   = false;
+let currentRotation = 0;
+let animFrameId  = null;
 
-  const pf = document.getElementById('pack-front');
-  const theme = state.currentPack === 'boy' ? 'theme-boy' : 'theme-girl';
+function loadState() {
+  try { return JSON.parse(localStorage.getItem(STATE_KEY)) || { boy: 0, girl: 0 }; }
+  catch { return { boy: 0, girl: 0 }; }
+}
+function saveState(s) { localStorage.setItem(STATE_KEY, JSON.stringify(s)); }
 
-  // Build two halves that mirror the original appearance
-  function makeHalf(side) {
-    const half = document.createElement('div');
-    half.className = `pack-half ${side}`;
-
-    const inner = document.createElement('div');
-    inner.className = 'half-inner';
-
-    // Clone the pack front visuals
-    const clone = pf.cloneNode(true);
-    clone.style.position = 'relative';
-    clone.style.borderRadius = '20px';
-    clone.style.width = '220px'; // full pack width
-    clone.style.height = '100%';
-    clone.style.display = 'flex';
-    inner.appendChild(clone);
-    half.appendChild(inner);
-    return half;
-  }
-
-  const leftHalf  = makeHalf('left');
-  const rightHalf = makeHalf('right');
-
-  pf.style.display = 'none';
-  sliceLine.style.opacity = '0';
-  packWrapper.style.transform = '';
-
-  packWrapper.appendChild(leftHalf);
-  packWrapper.appendChild(rightHalf);
-
-  // Animate the halves flying apart after a short pause
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      leftHalf.classList.add('flung');
-      rightHalf.classList.add('flung');
-    });
-  });
-
-  // Show prize after animation
-  setTimeout(() => {
-    revealPrize();
-  }, 550);
+function updateCounts() {
+  const s = loadState();
+  const fmt = (n, id) => {
+    document.getElementById(id).textContent = n + (n === 1 ? ' pack opened' : ' packs opened');
+  };
+  fmt(s.boy,  'boy-count');
+  fmt(s.girl, 'girl-count');
 }
 
-// ════════════════════════════════════════════════════════
-//  PRIZE LOGIC
-// ════════════════════════════════════════════════════════
+// ═══ ROLL ═══
 function rollTier() {
   const r = Math.random();
   if (r < TIER_RATES.familyevent) return 'familyevent';
@@ -901,163 +695,330 @@ function rollTier() {
   if (r < TIER_RATES.familyevent + TIER_RATES.rare + TIER_RATES.uncommon) return 'uncommon';
   return 'common';
 }
+function pickPrize(tier) {
+  const pool = PRIZES[currentPack][tier];
+  return pool[Math.floor(Math.random() * pool.length)];
+}
 
-function revealPrize() {
-  const tier   = rollTier();
-  const pool   = PRIZES[state.currentPack][tier];
-  const prize  = pool[Math.floor(Math.random() * pool.length)];
+// ═══ WHEEL DRAWING ═══
+function lighten(hex, amt) {
+  const n = parseInt(hex.slice(1), 16);
+  return `rgb(${Math.min(255,(n>>16)+amt)},${Math.min(255,((n>>8)&0xff)+amt)},${Math.min(255,(n&0xff)+amt)})`;
+}
+function darken(hex, amt) {
+  const n = parseInt(hex.slice(1), 16);
+  return `rgb(${Math.max(0,(n>>16)-amt)},${Math.max(0,((n>>8)&0xff)-amt)},${Math.max(0,(n&0xff)-amt)})`;
+}
 
-  const badge  = document.getElementById('prize-tier-badge');
-  badge.className = `prize-tier-badge ${tier}`;
-  const tierLabels = { common: 'COMMON', uncommon: '✨ UNCOMMON', rare: '💎 RARE', familyevent: '🎉 FAMILY EVENT' };
-  badge.textContent = tierLabels[tier] || tier.toUpperCase();
+function drawWheel(rotDeg) {
+  const canvas = document.getElementById('wheel-canvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const cx = W / 2, cy = H / 2, r = W / 2 - 3;
 
-  document.getElementById('prize-emoji').textContent = prize.emoji;
-  document.getElementById('prize-name').textContent  = prize.name;
-  document.getElementById('prize-desc').textContent  = prize.desc;
+  ctx.clearRect(0, 0, W, H);
 
+  // Outer shadow ring
+  ctx.beginPath();
+  ctx.arc(cx, cy, r + 2, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(0,0,0,0.5)';
+  ctx.fill();
+
+  const baseRad = (rotDeg - 90) * Math.PI / 180;
+  let startAngle = baseRad;
+
+  for (const slice of WHEEL_SLICES) {
+    const spanRad  = slice.degrees * Math.PI / 180;
+    const endAngle = startAngle + spanRad;
+    const midAngle = startAngle + spanRad / 2;
+
+    // Filled wedge
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r, startAngle, endAngle);
+    ctx.closePath();
+
+    const grad = ctx.createRadialGradient(cx, cy, r * 0.08, cx, cy, r);
+    grad.addColorStop(0,   lighten(slice.color, 50));
+    grad.addColorStop(0.5, slice.color);
+    grad.addColorStop(1,   darken(slice.color, 35));
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    // Divider
+    ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Mystery "?" label — centered in each slice
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(midAngle);
+    const labelR = r * 0.62;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.shadowColor = 'rgba(0,0,0,0.8)';
+    ctx.shadowBlur = 4;
+    ctx.font = 'bold 14px Segoe UI, system-ui, sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.9)';
+    ctx.fillText('?', labelR, 0);
+    ctx.restore();
+
+    startAngle = endAngle;
+  }
+
+  // Outer border ring
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+}
+
+// ═══ SPIN LOGIC ═══
+// Given a winning tier, compute how many degrees to rotate so the pointer
+// (fixed at 12 o'clock) lands inside one of that tier's slices.
+// Multiple slices may share the same tier — we pick one at random.
+function getSpinTarget(tier) {
+  // Build a list of {startAngle, degrees} for every slice of this tier
+  let angle = 0;
+  const matches = [];
+  for (const slice of WHEEL_SLICES) {
+    if (slice.tier === tier) {
+      matches.push({ startAngle: angle, degrees: slice.degrees });
+    }
+    angle += slice.degrees;
+  }
+  if (matches.length === 0) return 2160;
+
+  // Pick a random matching slice
+  const chosen = matches[Math.floor(Math.random() * matches.length)];
+  const margin = Math.max(2, chosen.degrees * 0.15);
+  const targetInArc = chosen.startAngle + margin + Math.random() * (chosen.degrees - margin * 2);
+  const fullSpins = (6 + Math.floor(Math.random() * 3)) * 360; // 6–8 full rotations
+  return fullSpins + (360 - (targetInArc % 360));
+}
+
+function easeOut(t) { return 1 - Math.pow(1 - t, 4); }
+
+let spinStartTime  = null;
+let spinDuration   = 4500;
+let spinStartRot   = 0;
+let spinTotalDelta = 0;
+let pendingTier    = null;
+
+function startSpin() {
+  if (isSpinning) return;
+  isSpinning = true;
+  document.getElementById('spin-btn').disabled = true;
+  document.getElementById('prize-reveal').classList.remove('visible');
+
+  pendingTier    = rollTier();
+  spinStartRot   = currentRotation;
+  spinTotalDelta = getSpinTarget(pendingTier);
+  spinDuration   = 4200 + Math.random() * 1000;
+  spinStartTime  = null;
+
+  playSpinSound();
+  requestAnimationFrame(animateSpin);
+}
+
+function animateSpin(ts) {
+  if (!spinStartTime) spinStartTime = ts;
+  const t = Math.min((ts - spinStartTime) / spinDuration, 1);
+  currentRotation = spinStartRot + spinTotalDelta * easeOut(t);
+  drawWheel(currentRotation);
+
+  if (t < 1) {
+    animFrameId = requestAnimationFrame(animateSpin);
+  } else {
+    isSpinning = false;
+    onSpinComplete(pendingTier);
+  }
+}
+
+function onSpinComplete(tier) {
+  const prize = pickPrize(tier);
+  const meta  = TIER_META[tier];
+
+  // Bump count
+  const s = loadState();
+  s[currentPack]++;
+  saveState(s);
+  updateCounts();
+
+  // Populate reveal card
+  document.getElementById('reveal-tier').style.display = 'none';
+
+  document.getElementById('reveal-emoji').textContent = prize.emoji;
+  document.getElementById('reveal-name').textContent  = prize.name;
+  document.getElementById('reveal-desc').textContent  = prize.desc;
   document.getElementById('prize-reveal').classList.add('visible');
-  document.getElementById('open-instruction').style.display = 'none';
-  document.getElementById('pack-stage').style.opacity = '0.1';
 
-  // Update count
-  state.counts[state.currentPack] = (state.counts[state.currentPack] || 0) + 1;
-  saveState();
-  updatePackStat();
-
+  if (tier === 'rare' || tier === 'familyevent') fireConfetti(meta.color);
   playRevealSound(tier);
-
-  if (tier !== 'common') {
-    launchConfetti(tier);
-  }
 }
 
-function nextPack() {
-  document.getElementById('pack-stage').style.opacity = '1';
-  resetPackAnimation();
+function resetSpin() {
+  document.getElementById('prize-reveal').classList.remove('visible');
+  document.getElementById('spin-btn').disabled = false;
 }
 
-function populateWhatsInside(type) {
-  const packPrizes = PRIZES[type];
-  const tierOrder = ['common', 'uncommon', 'rare', 'familyevent'];
-  const container = document.getElementById('wi-content');
+// ═══ NAVIGATION ═══
+function selectPack(pack) {
+  currentPack = pack;
+  document.querySelectorAll('.pack-card').forEach(c => c.classList.remove('selected'));
+  document.querySelector('.pack-card.' + pack).classList.add('selected');
 
-  container.innerHTML = tierOrder.map(tier => {
-    const meta = TIER_META[tier];
-    const prizes = packPrizes[tier];
-    return `
-      <div class="wi-tier">
-        <div class="wi-tier-header">
-          <div class="wi-tier-name ${tier}">${meta.label}</div>
-          <div class="wi-tier-chance">${meta.chance} chance</div>
-        </div>
-        <div class="wi-prizes">
-          ${prizes.map(p => `
-            <div class="wi-prize">
-              <div class="wi-prize-emoji">${p.emoji}</div>
-              <div class="wi-prize-info">
-                <div class="wi-prize-name">${p.name}</div>
-                <div class="wi-prize-desc">${p.desc}</div>
-              </div>
+  const btn = document.getElementById('open-pack-btn');
+  btn.classList.add('visible');
+  btn.className = 'open-pack-btn visible ' + (pack === 'boy' ? 'boy-btn' : 'girl-btn');
+
+  renderPrizeList(pack);
+  document.getElementById('prize-list-section').classList.add('visible');
+}
+
+function goToPackScreen() {
+  if (!currentPack) return;
+  document.getElementById('home-screen').style.display = 'none';
+
+  const ps = document.getElementById('pack-screen');
+  ps.style.display = 'flex';
+  ps.className = 'theme-' + (currentPack === 'boy' ? 'boy' : 'girl');
+
+  document.getElementById('pack-screen-title').textContent =
+    currentPack === 'boy' ? "Hudson's Pack" : "Monroe's Pack";
+
+  document.getElementById('spin-btn').disabled = false;
+  document.getElementById('prize-reveal').classList.remove('visible');
+
+  // Re-randomize slice colors and draw
+  initWheelSlices();
+  currentRotation = Math.random() * 360;
+  drawWheel(currentRotation);
+}
+
+function goHome() {
+  if (animFrameId) { cancelAnimationFrame(animFrameId); animFrameId = null; }
+  isSpinning = false;
+  document.getElementById('pack-screen').style.display = 'none';
+  document.getElementById('home-screen').style.display = '';
+  updateCounts();
+}
+
+// ═══ PRIZE LIST ═══
+function renderPrizeList(pack) {
+  const container = document.getElementById('prize-list-content');
+  container.innerHTML = '';
+  for (const tier of ['common','uncommon','rare','familyevent']) {
+    const meta   = TIER_META[tier];
+    const prizes = PRIZES[pack][tier];
+    const g = document.createElement('div');
+    g.className = 'tier-group';
+    g.innerHTML = `
+      <div class="tier-prizes">
+        ${prizes.map(p => `
+          <div class="prize-row">
+            <span class="prize-emoji">${p.emoji}</span>
+            <div class="prize-info">
+              <div class="prize-name">${p.name}</div>
+              <div class="prize-desc">${p.desc}</div>
             </div>
-          `).join('')}
-        </div>
-      </div>
-    `;
-  }).join('');
+          </div>
+        `).join('')}
+      </div>`;
+    container.appendChild(g);
+  }
 }
 
-// ════════════════════════════════════════════════════════
-//  CONFETTI
-// ════════════════════════════════════════════════════════
-const canvas  = document.getElementById('confetti-canvas');
-const ctx2d   = canvas.getContext('2d');
-let confettiParticles = [];
-let confettiRAF = null;
+// ═══ CONFETTI ═══
+const confCanvas = document.getElementById('confetti-canvas');
+const confCtx    = confCanvas.getContext('2d');
+let confParticles = [];
+let confAnimId    = null;
 
-function launchConfetti(tier) {
-  canvas.width  = window.innerWidth;
-  canvas.height = window.innerHeight;
+function fireConfetti(accentColor) {
+  confCanvas.width  = window.innerWidth;
+  confCanvas.height = window.innerHeight;
 
-  const isBoy = state.currentPack === 'boy';
-  const colors = tier === 'familyevent'
-    ? ['#ffd700','#ffec80','#ff9500','#fff','#ffe87a','#ff6b6b']
-    : isBoy
-      ? ['#4da6ff','#80caff','#4dcc88','#ffffff','#a8f0c6']
-      : ['#ff6bac','#ffb0d5','#ff8cc8','#ffffff','#ffd6eb'];
+  const colors = ['#f0a030','#4dcc88','#5aaeff','#c44070','#c8861a','#ffffff', accentColor];
+  confParticles = Array.from({ length: 130 }, () => ({
+    x:     Math.random() * confCanvas.width,
+    y:     -10 - Math.random() * 120,
+    r:     4 + Math.random() * 6,
+    color: colors[Math.floor(Math.random() * colors.length)],
+    vx:    (Math.random() - 0.5) * 6,
+    vy:    3 + Math.random() * 4,
+    spin:  Math.random() * 360,
+    spinV: (Math.random() - 0.5) * 9,
+    shape: Math.random() > 0.5 ? 'rect' : 'circle',
+  }));
 
-  const count = tier === 'familyevent' ? 140 : 80;
-
-  confettiParticles = [];
-  for (let i = 0; i < count; i++) {
-    confettiParticles.push({
-      x: Math.random() * canvas.width,
-      y: -20 - Math.random() * 120,
-      w: 6 + Math.random() * 10,
-      h: 4 + Math.random() * 6,
-      color: colors[Math.floor(Math.random() * colors.length)],
-      vx: (Math.random() - 0.5) * 4,
-      vy: 2 + Math.random() * 4,
-      spin: (Math.random() - 0.5) * 0.2,
-      angle: Math.random() * Math.PI * 2,
-      opacity: 1,
-    });
-  }
-
-  if (confettiRAF) cancelAnimationFrame(confettiRAF);
+  if (confAnimId) cancelAnimationFrame(confAnimId);
   animateConfetti();
 }
 
 function animateConfetti() {
-  ctx2d.clearRect(0, 0, canvas.width, canvas.height);
-  let alive = false;
-
-  confettiParticles.forEach(p => {
-    p.x += p.vx;
-    p.y += p.vy;
-    p.vy += 0.08;
-    p.angle += p.spin;
-    if (p.y > canvas.height * 0.7) p.opacity -= 0.025;
-    p.opacity = Math.max(0, p.opacity);
-
-    if (p.opacity > 0) {
-      alive = true;
-      ctx2d.save();
-      ctx2d.globalAlpha = p.opacity;
-      ctx2d.translate(p.x, p.y);
-      ctx2d.rotate(p.angle);
-      ctx2d.fillStyle = p.color;
-      ctx2d.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
-      ctx2d.restore();
-    }
+  confCtx.clearRect(0, 0, confCanvas.width, confCanvas.height);
+  confParticles.forEach(p => {
+    p.x  += p.vx;
+    p.y  += p.vy;
+    p.vy += 0.13;
+    p.vx *= 0.99;
+    p.spin += p.spinV;
+    confCtx.save();
+    confCtx.translate(p.x, p.y);
+    confCtx.rotate(p.spin * Math.PI / 180);
+    confCtx.fillStyle = p.color;
+    if (p.shape === 'rect') confCtx.fillRect(-p.r, -p.r/2, p.r*2, p.r);
+    else { confCtx.beginPath(); confCtx.arc(0,0,p.r/2,0,Math.PI*2); confCtx.fill(); }
+    confCtx.restore();
   });
-
-  if (alive) {
-    confettiRAF = requestAnimationFrame(animateConfetti);
-  } else {
-    ctx2d.clearRect(0, 0, canvas.width, canvas.height);
-  }
+  confParticles = confParticles.filter(p => p.y < confCanvas.height + 60);
+  if (confParticles.length > 0) confAnimId = requestAnimationFrame(animateConfetti);
+  else confCtx.clearRect(0, 0, confCanvas.width, confCanvas.height);
 }
 
-// ════════════════════════════════════════════════════════
-//  INIT
-// ════════════════════════════════════════════════════════
-updateHomeCounts();
-showScreen('home-screen');
+// ═══ SOUNDS ═══
+let audioCtx = null;
+function getAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+function playSpinSound() {
+  try {
+    const ctx = getAudio();
+    const osc = ctx.createOscillator(), gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(400, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(80, ctx.currentTime + 0.35);
+    gain.gain.setValueAtTime(0.14, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.45);
+    osc.start(); osc.stop(ctx.currentTime + 0.45);
+  } catch(e) {}
+}
+function playRevealSound(tier) {
+  try {
+    const ctx = getAudio();
+    const freqs =
+      tier === 'rare'        ? [523,659,784,1047] :
+      tier === 'familyevent' ? [523,659,784,1047,1319] :
+      tier === 'uncommon'    ? [440,554,659] : [330,392];
+    freqs.forEach((f, i) => {
+      const osc = ctx.createOscillator(), gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = 'sine'; osc.frequency.value = f;
+      const t = ctx.currentTime + i * 0.12;
+      gain.gain.setValueAtTime(0.12, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+      osc.start(t); osc.stop(t + 0.5);
+    });
+  } catch(e) {}
+}
 
-// Keyboard support for pack cards
-document.querySelectorAll('.pack-card').forEach(card => {
-  card.addEventListener('keydown', e => {
-    if (e.key === 'Enter' || e.key === ' ') card.click();
-  });
-});
-
-window.addEventListener('resize', () => {
-  if (confettiParticles.length) {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-  }
-});
+// ═══ INIT ═══
+updateCounts();
 </script>
 </body>
 </html>
