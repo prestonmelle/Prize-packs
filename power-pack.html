@@ -985,35 +985,116 @@ function getAudio() {
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   return audioCtx;
 }
-function playSpinSound() {
+
+// Schedule a single short note
+function playNote(ctx, freq, startTime, duration, type = 'sine', vol = 0.1, detune = 0) {
   try {
-    const ctx = getAudio();
-    const osc = ctx.createOscillator(), gain = ctx.createGain();
+    const osc  = ctx.createOscillator();
+    const gain = ctx.createGain();
     osc.connect(gain); gain.connect(ctx.destination);
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(400, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(80, ctx.currentTime + 0.35);
-    gain.gain.setValueAtTime(0.14, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.45);
-    osc.start(); osc.stop(ctx.currentTime + 0.45);
+    osc.type = type;
+    osc.frequency.value = freq;
+    osc.detune.value = detune;
+    gain.gain.setValueAtTime(0, startTime);
+    gain.gain.linearRampToValueAtTime(vol, startTime + 0.018);
+    gain.gain.setValueAtTime(vol, startTime + duration * 0.55);
+    gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+    osc.start(startTime); osc.stop(startTime + duration + 0.05);
   } catch(e) {}
 }
+
+// Wheel-ticking sound — ticks scheduled to match the easeOut deceleration curve
+function playSpinSound() {
+  try {
+    const ctx  = getAudio();
+    const now  = ctx.currentTime;
+    const dur  = spinDuration / 1000; // seconds
+    const ticks = 56;
+
+    for (let i = 0; i < ticks; i++) {
+      // Space ticks evenly in rotation-space, then map through inverse easeOut to time-space
+      const rotFraction = i / ticks;
+      const t = 1 - Math.pow(1 - rotFraction, 0.25); // inverse of easeOut quartic
+      const tickTime = now + t * dur;
+
+      // Pitch and volume drop as wheel decelerates
+      const speed = 1 - rotFraction;
+      const pitch = 300 + 500 * speed;
+      const vol   = 0.04 + 0.09 * speed;
+
+      const osc  = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = 'triangle';
+      osc.frequency.value = pitch;
+      gain.gain.setValueAtTime(vol, tickTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, tickTime + 0.05);
+      osc.start(tickTime); osc.stop(tickTime + 0.06);
+    }
+  } catch(e) {}
+}
+
+// Reveal fanfares — layered chords, per tier
 function playRevealSound(tier) {
   try {
     const ctx = getAudio();
-    const freqs =
-      tier === 'rare'        ? [523,659,784,1047] :
-      tier === 'familyevent' ? [523,659,784,1047,1319] :
-      tier === 'uncommon'    ? [440,554,659] : [330,392];
-    freqs.forEach((f, i) => {
-      const osc = ctx.createOscillator(), gain = ctx.createGain();
-      osc.connect(gain); gain.connect(ctx.destination);
-      osc.type = 'sine'; osc.frequency.value = f;
-      const t = ctx.currentTime + i * 0.12;
-      gain.gain.setValueAtTime(0.12, t);
-      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
-      osc.start(t); osc.stop(t + 0.5);
-    });
+    const now = ctx.currentTime;
+
+    if (tier === 'common') {
+      // Warm 3-note ascending arpeggio
+      playNote(ctx, 523,  now,       0.35, 'sine',     0.10);
+      playNote(ctx, 659,  now+0.10,  0.35, 'sine',     0.10);
+      playNote(ctx, 784,  now+0.20,  0.50, 'sine',     0.11);
+      playNote(ctx, 784,  now+0.20,  0.50, 'triangle', 0.05);
+
+    } else if (tier === 'uncommon') {
+      // Bright rising 4-note run + final chord
+      playNote(ctx, 523,  now,       0.22, 'triangle', 0.10);
+      playNote(ctx, 659,  now+0.09,  0.22, 'triangle', 0.10);
+      playNote(ctx, 784,  now+0.18,  0.22, 'triangle', 0.10);
+      playNote(ctx, 1047, now+0.27,  0.55, 'triangle', 0.12);
+      // Chord underneath the peak
+      playNote(ctx, 523,  now+0.27,  0.55, 'sine',     0.07);
+      playNote(ctx, 784,  now+0.27,  0.55, 'sine',     0.06);
+      // Slight shimmer detune
+      playNote(ctx, 1047, now+0.27,  0.55, 'sine',     0.04, 8);
+
+    } else if (tier === 'rare') {
+      // Triumphant rising fanfare + full chord burst
+      playNote(ctx, 523,  now,       0.18, 'triangle', 0.10);
+      playNote(ctx, 659,  now+0.07,  0.18, 'triangle', 0.10);
+      playNote(ctx, 784,  now+0.14,  0.18, 'triangle', 0.10);
+      playNote(ctx, 1047, now+0.21,  0.18, 'triangle', 0.11);
+      playNote(ctx, 1319, now+0.28,  0.65, 'triangle', 0.12);
+      // Full chord at peak
+      playNote(ctx, 659,  now+0.28,  0.65, 'sine',     0.08);
+      playNote(ctx, 1047, now+0.28,  0.65, 'sine',     0.08);
+      playNote(ctx, 1319, now+0.28,  0.65, 'sine',     0.07);
+      playNote(ctx, 1319, now+0.28,  0.65, 'sine',     0.04, 10);
+      // High sparkle
+      playNote(ctx, 2637, now+0.36,  0.45, 'sine',     0.04);
+
+    } else if (tier === 'familyevent') {
+      // Epic full fanfare — fast run → big chord → shimmer tail
+      playNote(ctx, 523,  now,       0.14, 'triangle', 0.10);
+      playNote(ctx, 659,  now+0.06,  0.14, 'triangle', 0.10);
+      playNote(ctx, 784,  now+0.12,  0.14, 'triangle', 0.10);
+      playNote(ctx, 1047, now+0.18,  0.14, 'triangle', 0.11);
+      playNote(ctx, 1319, now+0.24,  0.14, 'triangle', 0.11);
+      playNote(ctx, 1568, now+0.30,  0.80, 'triangle', 0.12);
+      // Big chord at peak
+      playNote(ctx, 523,  now+0.30,  0.80, 'sine',     0.08);
+      playNote(ctx, 784,  now+0.30,  0.80, 'sine',     0.08);
+      playNote(ctx, 1047, now+0.30,  0.80, 'sine',     0.08);
+      playNote(ctx, 1319, now+0.30,  0.80, 'sine',     0.07);
+      playNote(ctx, 1568, now+0.30,  0.80, 'sine',     0.07);
+      // Chorus detune layer
+      playNote(ctx, 1568, now+0.30,  0.80, 'sine',     0.04, 12);
+      playNote(ctx, 1319, now+0.30,  0.80, 'sine',     0.04, -10);
+      // Sparkling high tail
+      playNote(ctx, 2093, now+0.40,  0.55, 'sine',     0.04);
+      playNote(ctx, 2637, now+0.50,  0.45, 'sine',     0.03);
+    }
   } catch(e) {}
 }
 
