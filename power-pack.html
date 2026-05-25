@@ -122,6 +122,22 @@ body {
 .open-pack-btn.girl-btn { background: linear-gradient(135deg,#c44070,#e06090); color:#fff; box-shadow: 0 0 30px rgba(196,64,112,0.45); }
 .open-pack-btn:hover { transform: scale(1.05); }
 
+.reset-counts-btn {
+  display: block;
+  margin: -24px auto 40px;
+  padding: 8px 24px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid #333;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+}
+.reset-counts-btn:hover { color: var(--text-light); border-color: #666; }
+
 /* ─── PRIZE LIST ─── */
 .prize-list-section { width: 100%; display: none; }
 .prize-list-section.visible { display: block; }
@@ -486,6 +502,7 @@ body {
   </div>
 
   <button class="open-pack-btn" id="open-pack-btn" onclick="goToPackScreen()">Spin the Wheel</button>
+  <button class="reset-counts-btn" onclick="resetCounts()">↺ Reset Spins</button>
 
   <div class="prize-list-section" id="prize-list-section">
     <div class="prize-list-header">What's Inside</div>
@@ -677,6 +694,11 @@ function loadState() {
   catch { return { boy: 0, girl: 0 }; }
 }
 function saveState(s) { localStorage.setItem(STATE_KEY, JSON.stringify(s)); }
+
+function resetCounts() {
+  saveState({ boy: 0, girl: 0 });
+  updateCounts();
+}
 
 function updateCounts() {
   const s = loadState();
