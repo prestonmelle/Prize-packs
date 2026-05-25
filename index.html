@@ -602,38 +602,38 @@ const PRIZES = {
 };
 
 // ═══ TIER CONFIG ═══
-const TIER_RATES = { common: 0.55, uncommon: 0.30, rare: 0.10, familyevent: 0.05 };
+const TIER_RATES = { common: 0.35, uncommon: 0.50, rare: 0.10, familyevent: 0.05 };
 const TIER_META = {
-  common:      { label: 'Common',       chance: '55%', color: '#888880' },
-  uncommon:    { label: 'Uncommon',     chance: '30%', color: '#4dcc88' },
+  common:      { label: 'Common',       chance: '35%', color: '#888880' },
+  uncommon:    { label: 'Uncommon',     chance: '50%', color: '#4dcc88' },
   rare:        { label: 'Rare',         chance: '10%', color: '#5aaeff' },
   familyevent: { label: 'Family Event', chance: '5%',  color: '#f0a030' },
 };
 
 // 20 equal slices of 18° each — all same size visually
-// Counts match exact odds: Common×11=55%, Uncommon×6=30%, Rare×2=10%, FamilyEvent×1=5%
+// Counts match exact odds: Common×7=35%, Uncommon×10=50%, Rare×2=10%, FamilyEvent×1=5%
 // Interleaved so no obvious tier grouping
 const SLICE_LAYOUT = [
   { tier: 'common' },
   { tier: 'uncommon' },
   { tier: 'common' },
-  { tier: 'rare' },
-  { tier: 'common' },
   { tier: 'uncommon' },
   { tier: 'common' },
+  { tier: 'uncommon' },
   { tier: 'rare' },
-  { tier: 'common' },
   { tier: 'uncommon' },
   { tier: 'common' },
+  { tier: 'uncommon' },
   { tier: 'familyevent' },
+  { tier: 'uncommon' },
   { tier: 'common' },
+  { tier: 'uncommon' },
+  { tier: 'rare' },
   { tier: 'uncommon' },
   { tier: 'common' },
   { tier: 'uncommon' },
   { tier: 'common' },
   { tier: 'uncommon' },
-  { tier: 'common' },
-  { tier: 'common' },
 ];
 const SLICE_DEGREES = 18; // 360 / 20
 
@@ -681,7 +681,7 @@ function saveState(s) { localStorage.setItem(STATE_KEY, JSON.stringify(s)); }
 function updateCounts() {
   const s = loadState();
   const fmt = (n, id) => {
-    document.getElementById(id).textContent = n + (n === 1 ? ' pack opened' : ' packs opened');
+    document.getElementById(id).textContent = n + (n === 1 ? ' spin' : ' spins');
   };
   fmt(s.boy,  'boy-count');
   fmt(s.girl, 'girl-count');
