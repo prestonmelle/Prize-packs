@@ -18,10 +18,11 @@
   --bg-card: #111111;
   --text-light: #f0ede8;
   --text-muted: #666;
-  --common-color: #888880;
-  --uncommon-color: #4dcc88;
+  --common-color: #4dcc88;
   --rare-color: #5aaeff;
   --familyevent-color: #f0a030;
+  --big-primary: #f0a030;
+  --small-primary: #4dcc88;
 }
 
 body {
@@ -34,15 +35,76 @@ body {
   align-items: center;
 }
 
+/* ─── WHEEL SELECT SCREEN ─── */
+#wheel-select-screen {
+  width: 100%;
+  max-width: 680px;
+  padding: 64px 20px 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.wheel-type-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.wheel-type-card {
+  background: var(--bg-card);
+  border-radius: 20px;
+  padding: 44px 20px;
+  cursor: pointer;
+  text-align: center;
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  border: 1.5px solid transparent;
+  user-select: none;
+}
+
+.wheel-type-card.big   { border-color: rgba(240,160,48,0.3); }
+.wheel-type-card.small { border-color: rgba(77,204,136,0.3); }
+
+.wheel-type-card.big:hover   { transform: translateY(-5px); box-shadow: 0 0 48px rgba(240,160,48,0.28); border-color: rgba(240,160,48,0.65); }
+.wheel-type-card.small:hover { transform: translateY(-5px); box-shadow: 0 0 48px rgba(77,204,136,0.28); border-color: rgba(77,204,136,0.65); }
+
+.wheel-type-icon { font-size: 3.2rem; margin-bottom: 16px; }
+
+.wheel-type-name {
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+.wheel-type-card.big   .wheel-type-name { color: var(--big-primary); }
+.wheel-type-card.small .wheel-type-name { color: var(--small-primary); }
+
 /* ─── HOME SCREEN ─── */
 #home-screen {
   width: 100%;
   max-width: 680px;
   padding: 48px 20px 80px;
-  display: flex;
+  display: none;
   flex-direction: column;
   align-items: center;
 }
+
+.change-wheel-btn {
+  align-self: flex-end;
+  background: none;
+  border: 1px solid #1e1e1e;
+  color: #2a2a2a;
+  font-size: 0.7rem;
+  padding: 5px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  margin-bottom: 18px;
+  transition: color 0.2s, border-color 0.2s;
+}
+.change-wheel-btn:hover { color: var(--text-muted); border-color: #444; }
 
 .site-title {
   font-size: 2.6rem;
@@ -434,6 +496,7 @@ body {
   padding: 5px 18px;
   border-radius: 20px;
   margin-bottom: 18px;
+  display: none;
 }
 
 .reveal-emoji { font-size: 4rem; margin-bottom: 12px; line-height: 1; }
@@ -483,8 +546,27 @@ body {
 </head>
 <body>
 
-<!-- ═══ HOME SCREEN ═══ -->
+<!-- ═══ WHEEL SELECT SCREEN (parent-facing) ═══ -->
+<div id="wheel-select-screen">
+  <h1 class="site-title">Melle Kids Prize Wheel</h1>
+  <p class="site-subtitle" style="margin-bottom:40px;">Select the wheel</p>
+  <div class="wheel-type-grid">
+    <div class="wheel-type-card big" onclick="selectWheelType('big')">
+      <div class="wheel-type-icon">🏆</div>
+      <div class="wheel-type-name">Big Wheel</div>
+    </div>
+    <div class="wheel-type-card small" onclick="selectWheelType('small')">
+      <div class="wheel-type-icon">⭐</div>
+      <div class="wheel-type-name">Small Wheel</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ HOME SCREEN (kid-facing) ═══ -->
 <div id="home-screen">
+  <!-- Subtle parent-only reset — nearly invisible to kids -->
+  <button class="change-wheel-btn" onclick="changeWheel()">⚙ change wheel</button>
+
   <h1 class="site-title">Melle Kids Prize Wheel</h1>
   <p class="site-subtitle">Pick your wheel and see what you win</p>
 
@@ -492,12 +574,12 @@ body {
     <div class="pack-card boy" onclick="selectPack('boy')">
       <div class="pack-card-icon">🚔</div>
       <div class="pack-card-name">Hudson's Wheel</div>
-      <div class="pack-card-count" id="boy-count">0 packs opened</div>
+      <div class="pack-card-count" id="boy-count">0 spins</div>
     </div>
     <div class="pack-card girl" onclick="selectPack('girl')">
       <div class="pack-card-icon">🌸</div>
       <div class="pack-card-name">Monroe's Wheel</div>
-      <div class="pack-card-count" id="girl-count">0 packs opened</div>
+      <div class="pack-card-count" id="girl-count">0 spins</div>
     </div>
   </div>
 
@@ -513,10 +595,9 @@ body {
 <!-- ═══ PACK SCREEN ═══ -->
 <div id="pack-screen">
   <button class="back-btn" onclick="goHome()">← Back to Packs</button>
-  <div class="pack-screen-title" id="pack-screen-title">Hudson's Pack</div>
+  <div class="pack-screen-title" id="pack-screen-title">Hudson's Wheel</div>
 
   <div class="pack-scene">
-    <!-- Left pillar -->
     <div class="scene-pillar">
       <div class="pillar-top"></div>
       <div class="pillar-body">
@@ -527,7 +608,6 @@ body {
       <div class="pillar-foot"></div>
     </div>
 
-    <!-- Center: wheel + platform -->
     <div class="scene-center">
       <div id="pack-stage">
         <div class="wheel-wrapper" id="wheel-wrapper">
@@ -540,7 +620,6 @@ body {
       <div class="scene-platform"></div>
     </div>
 
-    <!-- Right pillar -->
     <div class="scene-pillar">
       <div class="pillar-top"></div>
       <div class="pillar-body">
@@ -552,7 +631,6 @@ body {
     </div>
   </div>
 
-  <!-- Prize reveal -->
   <div id="prize-reveal">
     <div class="reveal-tier" id="reveal-tier"></div>
     <div class="reveal-emoji" id="reveal-emoji"></div>
@@ -566,95 +644,75 @@ body {
 <canvas id="confetti-canvas"></canvas>
 
 <script>
-// ═══ PRIZES ═══
+// ═══════════════════════════════════════════════════
+// PRIZES
+// Small Wheel: all Common — flat equal-odds pool
+// Big Wheel:   Rare (75%) + Family Event (25%)
+// Both Hudson and Monroe share the same pool per wheel type
+// ═══════════════════════════════════════════════════
+
 const PRIZES = {
-  boy: {
+  small: {
     common: [
-      { emoji: '🍬', name: 'Candy or Gum', desc: 'Pick candy or a piece of gum.' },
-    ],
-    uncommon: [
-      { emoji: '📺', name: 'Watch a Show', desc: 'Watch a show at some point during the day.' },
-      { emoji: '🎁', name: 'Prize Box', desc: 'Pick a prize from the prize box.' },
-      { emoji: '⛽', name: 'Gas Station Run', desc: 'A trip to the gas station for a treat.' },
-      { emoji: '🌙', name: 'Stay Up Late', desc: 'Stay up 30 minutes past bedtime.' },
-    ],
-    rare: [
-      { emoji: '🍽️', name: 'Pick Dinner', desc: 'Pick what we eat for dinner.' },
-      { emoji: '📱', name: 'iPad Time', desc: 'Get 30 minutes of iPad time.' },
-      { emoji: '🍪', name: 'Swig Cookie & Drink', desc: 'Go get a cookie and drink from Swig.' },
-      { emoji: '🎲', name: 'Family Game Night', desc: 'Pick a game to play with the family.' },
-    ],
-    familyevent: [
-      { emoji: '🎳', name: 'Family Bowling Night', desc: 'Pick the day — the whole family goes bowling!' },
-      { emoji: '🎢', name: 'Day/Night at Lagoon', desc: 'A full day or night out at Lagoon — rides, fun, the whole thing!' },
-      { emoji: '🎬', name: 'Movie Night Pick', desc: 'You choose the movie for family movie night.' },
-      { emoji: '🍕', name: 'Pizza Night', desc: 'Pizza dinner and you pick the family activity.' },
-      { emoji: '🎟️', name: 'Your Choice Outing', desc: 'Pick ANY family event you want — your call!' },
+      { emoji: '🍬', name: 'Candy or Gum',            desc: 'Pick candy or a piece of gum.' },
+      { emoji: '📺', name: 'Watch a Show',             desc: 'Watch a show at some point during the day.' },
+      { emoji: '🎁', name: 'Prize Box',                desc: 'Pick a prize from the prize box.' },
+      { emoji: '🌙', name: 'Stay Up Late',             desc: 'Stay up 30 minutes past bedtime.' },
+      { emoji: '🎲', name: 'Family Game Night',        desc: 'Pick a game to play with the family.' },
+      { emoji: '📱', name: 'iPad Time',                desc: 'Get 20 minutes of iPad time.' },
+      { emoji: '🛒', name: 'Add to Grocery List',      desc: 'Add your favorite cereal or snack to the grocery list.' },
+      { emoji: '🧺', name: 'Picnic Lunch',             desc: 'Have a picnic for lunch.' },
     ],
   },
-  girl: {
-    common: [
-      { emoji: '🍬', name: 'Candy or Gum', desc: 'Pick candy or a piece of gum.' },
-    ],
-    uncommon: [
-      { emoji: '📺', name: 'Watch a Show', desc: 'Watch a show at some point during the day.' },
-      { emoji: '🎁', name: 'Prize Box', desc: 'Pick a prize from the prize box.' },
-      { emoji: '⛽', name: 'Gas Station Run', desc: 'A trip to the gas station for a treat.' },
-      { emoji: '🌙', name: 'Stay Up Late', desc: 'Stay up 30 minutes past bedtime.' },
-    ],
+  big: {
     rare: [
-      { emoji: '🍽️', name: 'Pick Dinner', desc: 'Pick what we eat for dinner.' },
-      { emoji: '📱', name: 'iPad Time', desc: 'Get 30 minutes of iPad time.' },
-      { emoji: '🍪', name: 'Swig Cookie & Drink', desc: 'Go get a cookie and drink from Swig.' },
-      { emoji: '🎲', name: 'Family Game Night', desc: 'Pick a game to play with the family.' },
+      { emoji: '🍽️', name: 'Pick Dinner',             desc: 'Pick what we eat for dinner.' },
+      { emoji: '🍪', name: 'Swig Cookie or Drink',    desc: 'Go get a cookie or drink from Swig.' },
+      { emoji: '⛽', name: 'Gas Station Run',          desc: 'A trip to the gas station for a treat.' },
+      { emoji: '🎲', name: 'Family Game Night',        desc: 'You pick the game we play.' },
+      { emoji: '🏞️', name: 'Play at the Park',        desc: 'You pick the park we play at.' },
     ],
     familyevent: [
-      { emoji: '🎳', name: 'Family Bowling Night', desc: 'Pick the day — the whole family goes bowling!' },
-      { emoji: '🎢', name: 'Day/Night at Lagoon', desc: 'A full day or night out at Lagoon — rides, fun, the whole thing!' },
-      { emoji: '🎬', name: 'Movie Night Pick', desc: 'You choose the movie for family movie night.' },
-      { emoji: '🍕', name: 'Pizza Night', desc: 'Pizza dinner and you pick the family activity.' },
-      { emoji: '🎟️', name: 'Your Choice Outing', desc: 'Pick ANY family event you want — your call!' },
+      { emoji: '🎯', name: 'Pick the Activity',        desc: 'Choose the activity that we do today.' },
+      { emoji: '🎬', name: 'Movie Night Pick',         desc: 'You choose the movie for family movie night.' },
+      { emoji: '🍕', name: 'Pizza Night',              desc: 'Pizza Night for dinner.' },
+      { emoji: '🧁', name: 'Baking',                   desc: 'Choose something to bake.' },
     ],
-  }
+  },
 };
 
-// ═══ TIER CONFIG ═══
-const TIER_RATES = { common: 0.35, uncommon: 0.30, rare: 0.25, familyevent: 0.10 };
-const TIER_META = {
-  common:      { label: 'Common',       chance: '35%', color: '#888880' },
-  uncommon:    { label: 'Uncommon',     chance: '30%', color: '#4dcc88' },
-  rare:        { label: 'Rare',         chance: '25%', color: '#5aaeff' },
-  familyevent: { label: 'Family Event', chance: '10%', color: '#f0a030' },
+// ═══════════════════════════════════════════════════
+// WHEEL CONFIG — per wheel type
+// Small: 20 common slices (uniform)
+// Big:   15 rare + 5 familyevent (75% / 25%)
+// ═══════════════════════════════════════════════════
+
+const WHEEL_CONFIG = {
+  small: {
+    sliceLayout: Array.from({ length: 20 }, () => ({ tier: 'common' })),
+    tierRates: { common: 1.0 },
+    tierMeta: {
+      common: { label: 'Prize', chance: 'Equal odds', color: '#4dcc88' },
+    },
+  },
+  big: {
+    sliceLayout: [
+      { tier: 'rare' }, { tier: 'rare' },       { tier: 'rare' },       { tier: 'familyevent' },
+      { tier: 'rare' }, { tier: 'rare' },       { tier: 'rare' },       { tier: 'familyevent' },
+      { tier: 'rare' }, { tier: 'rare' },       { tier: 'rare' },       { tier: 'familyevent' },
+      { tier: 'rare' }, { tier: 'rare' },       { tier: 'rare' },       { tier: 'familyevent' },
+      { tier: 'rare' }, { tier: 'rare' },       { tier: 'rare' },       { tier: 'familyevent' },
+    ],
+    tierRates: { rare: 0.75, familyevent: 0.25 },
+    tierMeta: {
+      rare:        { label: 'Prize',        chance: '75%', color: '#5aaeff' },
+      familyevent: { label: 'Family Event', chance: '25%', color: '#f0a030' },
+    },
+  },
 };
 
-// 20 equal slices of 18° each — all same size visually
-// Counts match exact odds: Common×7=35%, Uncommon×6=30%, Rare×5=25%, FamilyEvent×2=10%
-// Interleaved so no obvious tier grouping
-const SLICE_LAYOUT = [
-  { tier: 'common' },
-  { tier: 'uncommon' },
-  { tier: 'rare' },
-  { tier: 'common' },
-  { tier: 'familyevent' },
-  { tier: 'uncommon' },
-  { tier: 'rare' },
-  { tier: 'common' },
-  { tier: 'uncommon' },
-  { tier: 'rare' },
-  { tier: 'familyevent' },
-  { tier: 'common' },
-  { tier: 'uncommon' },
-  { tier: 'rare' },
-  { tier: 'common' },
-  { tier: 'uncommon' },
-  { tier: 'rare' },
-  { tier: 'common' },
-  { tier: 'uncommon' },
-  { tier: 'common' },
-];
 const SLICE_DEGREES = 18; // 360 / 20
 
-// Vibrant palette — 20 distinct colors, randomly shuffled each pack open
 const COLOR_PALETTE = [
   '#FF6B6B','#FFD93D','#6BCB77','#4D96FF','#FF922B',
   '#CC5DE8','#20C997','#F06595','#74C0FC','#A9E34B',
@@ -662,7 +720,7 @@ const COLOR_PALETTE = [
   '#FF6B9D','#C0EB75','#66D9E8','#FFC078','#8CE99A',
 ];
 
-let WHEEL_SLICES = []; // built fresh each pack open
+let WHEEL_SLICES = [];
 
 function shuffleArray(arr) {
   const a = [...arr];
@@ -674,8 +732,9 @@ function shuffleArray(arr) {
 }
 
 function initWheelSlices() {
+  const layout = WHEEL_CONFIG[wheelType].sliceLayout;
   const colors = shuffleArray(COLOR_PALETTE);
-  WHEEL_SLICES = SLICE_LAYOUT.map((s, i) => ({
+  WHEEL_SLICES = layout.map((s, i) => ({
     tier:    s.tier,
     degrees: SLICE_DEGREES,
     color:   colors[i],
@@ -684,10 +743,11 @@ function initWheelSlices() {
 
 // ═══ STATE ═══
 const STATE_KEY = 'prizepackState';
-let currentPack  = null;
-let isSpinning   = false;
+let wheelType       = null;  // 'big' | 'small'
+let currentPack     = null;  // 'boy' | 'girl'
+let isSpinning      = false;
 let currentRotation = 0;
-let animFrameId  = null;
+let animFrameId     = null;
 
 function loadState() {
   try { return JSON.parse(localStorage.getItem(STATE_KEY)) || { boy: 0, girl: 0 }; }
@@ -709,16 +769,41 @@ function updateCounts() {
   fmt(s.girl, 'girl-count');
 }
 
+// ═══ WHEEL TYPE SELECTION ═══
+function selectWheelType(type) {
+  wheelType   = type;
+  currentPack = null;
+  document.getElementById('wheel-select-screen').style.display = 'none';
+  const hs = document.getElementById('home-screen');
+  hs.style.display = 'flex';
+  document.querySelectorAll('.pack-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('open-pack-btn').classList.remove('visible');
+  document.getElementById('prize-list-section').classList.remove('visible');
+  updateCounts();
+}
+
+function changeWheel() {
+  wheelType   = null;
+  currentPack = null;
+  document.getElementById('home-screen').style.display = 'none';
+  document.getElementById('wheel-select-screen').style.display = 'flex';
+}
+
 // ═══ ROLL ═══
 function rollTier() {
+  const rates = WHEEL_CONFIG[wheelType].tierRates;
   const r = Math.random();
-  if (r < TIER_RATES.familyevent) return 'familyevent';
-  if (r < TIER_RATES.familyevent + TIER_RATES.rare) return 'rare';
-  if (r < TIER_RATES.familyevent + TIER_RATES.rare + TIER_RATES.uncommon) return 'uncommon';
-  return 'common';
+  let cumulative = 0;
+  for (const [tier, rate] of Object.entries(rates)) {
+    cumulative += rate;
+    if (r < cumulative) return tier;
+  }
+  // Fallback to last tier
+  return Object.keys(rates)[Object.keys(rates).length - 1];
 }
+
 function pickPrize(tier) {
-  const pool = PRIZES[currentPack][tier];
+  const pool = PRIZES[wheelType][tier];
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
@@ -740,7 +825,6 @@ function drawWheel(rotDeg) {
 
   ctx.clearRect(0, 0, W, H);
 
-  // Outer shadow ring
   ctx.beginPath();
   ctx.arc(cx, cy, r + 2, 0, Math.PI * 2);
   ctx.fillStyle = 'rgba(0,0,0,0.5)';
@@ -754,7 +838,6 @@ function drawWheel(rotDeg) {
     const endAngle = startAngle + spanRad;
     const midAngle = startAngle + spanRad / 2;
 
-    // Filled wedge
     ctx.beginPath();
     ctx.moveTo(cx, cy);
     ctx.arc(cx, cy, r, startAngle, endAngle);
@@ -767,12 +850,10 @@ function drawWheel(rotDeg) {
     ctx.fillStyle = grad;
     ctx.fill();
 
-    // Divider
     ctx.strokeStyle = 'rgba(0,0,0,0.5)';
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    // Mystery "?" label — centered in each slice
     ctx.save();
     ctx.translate(cx, cy);
     ctx.rotate(midAngle);
@@ -789,7 +870,6 @@ function drawWheel(rotDeg) {
     startAngle = endAngle;
   }
 
-  // Outer border ring
   ctx.beginPath();
   ctx.arc(cx, cy, r, 0, Math.PI * 2);
   ctx.strokeStyle = 'rgba(255,255,255,0.2)';
@@ -798,11 +878,7 @@ function drawWheel(rotDeg) {
 }
 
 // ═══ SPIN LOGIC ═══
-// Given a winning tier, compute how many degrees to rotate so the pointer
-// (fixed at 12 o'clock) lands inside one of that tier's slices.
-// Multiple slices may share the same tier — we pick one at random.
 function getSpinTarget(tier) {
-  // Build a list of {startAngle, degrees} for every slice of this tier
   let angle = 0;
   const matches = [];
   for (const slice of WHEEL_SLICES) {
@@ -813,11 +889,10 @@ function getSpinTarget(tier) {
   }
   if (matches.length === 0) return 2160;
 
-  // Pick a random matching slice
   const chosen = matches[Math.floor(Math.random() * matches.length)];
   const margin = Math.max(2, chosen.degrees * 0.15);
   const targetInArc = chosen.startAngle + margin + Math.random() * (chosen.degrees - margin * 2);
-  const fullSpins = (6 + Math.floor(Math.random() * 3)) * 360; // 6–8 full rotations
+  const fullSpins = (6 + Math.floor(Math.random() * 3)) * 360;
   return fullSpins + (360 - (targetInArc % 360));
 }
 
@@ -861,23 +936,22 @@ function animateSpin(ts) {
 
 function onSpinComplete(tier) {
   const prize = pickPrize(tier);
-  const meta  = TIER_META[tier];
+  const meta  = WHEEL_CONFIG[wheelType].tierMeta[tier];
 
-  // Bump count
   const s = loadState();
   s[currentPack]++;
   saveState(s);
   updateCounts();
-
-  // Populate reveal card
-  document.getElementById('reveal-tier').style.display = 'none';
 
   document.getElementById('reveal-emoji').textContent = prize.emoji;
   document.getElementById('reveal-name').textContent  = prize.name;
   document.getElementById('reveal-desc').textContent  = prize.desc;
   document.getElementById('prize-reveal').classList.add('visible');
 
-  if (tier === 'rare' || tier === 'familyevent') fireConfetti(meta.color);
+  // Confetti on big wheel wins (all tiers) and small wheel family event
+  if (wheelType === 'big' || tier === 'familyevent') {
+    fireConfetti(meta.color);
+  }
   playRevealSound(tier);
 }
 
@@ -896,7 +970,7 @@ function selectPack(pack) {
   btn.classList.add('visible');
   btn.className = 'open-pack-btn visible ' + (pack === 'boy' ? 'boy-btn' : 'girl-btn');
 
-  renderPrizeList(pack);
+  renderPrizeList();
   document.getElementById('prize-list-section').classList.add('visible');
 }
 
@@ -914,7 +988,6 @@ function goToPackScreen() {
   document.getElementById('spin-btn').disabled = false;
   document.getElementById('prize-reveal').classList.remove('visible');
 
-  // Re-randomize slice colors and draw
   initWheelSlices();
   currentRotation = Math.random() * 360;
   drawWheel(currentRotation);
@@ -924,22 +997,31 @@ function goHome() {
   if (animFrameId) { cancelAnimationFrame(animFrameId); animFrameId = null; }
   isSpinning = false;
   document.getElementById('pack-screen').style.display = 'none';
-  document.getElementById('home-screen').style.display = '';
+  document.getElementById('home-screen').style.display = 'flex';
   updateCounts();
 }
 
-// ═══ PRIZE LIST ═══
-function renderPrizeList(pack) {
+// ═══ PRIZE LIST (What's Inside) ═══
+function renderPrizeList() {
   const container = document.getElementById('prize-list-content');
   container.innerHTML = '';
-  for (const tier of ['common','uncommon','rare','familyevent']) {
-    const meta   = TIER_META[tier];
-    const prizes = PRIZES[pack][tier];
+
+  const config = WHEEL_CONFIG[wheelType];
+  const prizes = PRIZES[wheelType];
+
+  for (const tier of Object.keys(config.tierMeta)) {
+    const meta      = config.tierMeta[tier];
+    const tierPrizes = prizes[tier] || [];
     const g = document.createElement('div');
     g.className = 'tier-group';
     g.innerHTML = `
+      <div class="tier-label-row">
+        <div class="tier-dot" style="background:${meta.color}"></div>
+        <span class="tier-label" style="color:${meta.color}">${meta.label}</span>
+        <span class="tier-chance">${meta.chance}</span>
+      </div>
       <div class="tier-prizes">
-        ${prizes.map(p => `
+        ${tierPrizes.map(p => `
           <div class="prize-row">
             <span class="prize-emoji">${p.emoji}</span>
             <div class="prize-info">
@@ -1008,7 +1090,6 @@ function getAudio() {
   return audioCtx;
 }
 
-// Schedule a single short note
 function playNote(ctx, freq, startTime, duration, type = 'sine', vol = 0.1, detune = 0) {
   try {
     const osc  = ctx.createOscillator();
@@ -1025,21 +1106,18 @@ function playNote(ctx, freq, startTime, duration, type = 'sine', vol = 0.1, detu
   } catch(e) {}
 }
 
-// Wheel-ticking sound — ticks scheduled to match the easeOut deceleration curve
 function playSpinSound() {
   try {
     const ctx  = getAudio();
     const now  = ctx.currentTime;
-    const dur  = spinDuration / 1000; // seconds
+    const dur  = spinDuration / 1000;
     const ticks = 56;
 
     for (let i = 0; i < ticks; i++) {
-      // Space ticks evenly in rotation-space, then map through inverse easeOut to time-space
       const rotFraction = i / ticks;
-      const t = 1 - Math.pow(1 - rotFraction, 0.25); // inverse of easeOut quartic
+      const t = 1 - Math.pow(1 - rotFraction, 0.25);
       const tickTime = now + t * dur;
 
-      // Pitch and volume drop as wheel decelerates
       const speed = 1 - rotFraction;
       const pitch = 300 + 500 * speed;
       const vol   = 0.04 + 0.09 * speed;
@@ -1056,64 +1134,43 @@ function playSpinSound() {
   } catch(e) {}
 }
 
-// Reveal fanfares — layered chords, per tier
 function playRevealSound(tier) {
   try {
     const ctx = getAudio();
     const now = ctx.currentTime;
 
     if (tier === 'common') {
-      // Warm 3-note ascending arpeggio
       playNote(ctx, 523,  now,       0.35, 'sine',     0.10);
       playNote(ctx, 659,  now+0.10,  0.35, 'sine',     0.10);
       playNote(ctx, 784,  now+0.20,  0.50, 'sine',     0.11);
       playNote(ctx, 784,  now+0.20,  0.50, 'triangle', 0.05);
 
-    } else if (tier === 'uncommon') {
-      // Bright rising 4-note run + final chord
-      playNote(ctx, 523,  now,       0.22, 'triangle', 0.10);
-      playNote(ctx, 659,  now+0.09,  0.22, 'triangle', 0.10);
-      playNote(ctx, 784,  now+0.18,  0.22, 'triangle', 0.10);
-      playNote(ctx, 1047, now+0.27,  0.55, 'triangle', 0.12);
-      // Chord underneath the peak
-      playNote(ctx, 523,  now+0.27,  0.55, 'sine',     0.07);
-      playNote(ctx, 784,  now+0.27,  0.55, 'sine',     0.06);
-      // Slight shimmer detune
-      playNote(ctx, 1047, now+0.27,  0.55, 'sine',     0.04, 8);
-
     } else if (tier === 'rare') {
-      // Triumphant rising fanfare + full chord burst
       playNote(ctx, 523,  now,       0.18, 'triangle', 0.10);
       playNote(ctx, 659,  now+0.07,  0.18, 'triangle', 0.10);
       playNote(ctx, 784,  now+0.14,  0.18, 'triangle', 0.10);
       playNote(ctx, 1047, now+0.21,  0.18, 'triangle', 0.11);
       playNote(ctx, 1319, now+0.28,  0.65, 'triangle', 0.12);
-      // Full chord at peak
       playNote(ctx, 659,  now+0.28,  0.65, 'sine',     0.08);
       playNote(ctx, 1047, now+0.28,  0.65, 'sine',     0.08);
       playNote(ctx, 1319, now+0.28,  0.65, 'sine',     0.07);
       playNote(ctx, 1319, now+0.28,  0.65, 'sine',     0.04, 10);
-      // High sparkle
       playNote(ctx, 2637, now+0.36,  0.45, 'sine',     0.04);
 
     } else if (tier === 'familyevent') {
-      // Epic full fanfare — fast run → big chord → shimmer tail
       playNote(ctx, 523,  now,       0.14, 'triangle', 0.10);
       playNote(ctx, 659,  now+0.06,  0.14, 'triangle', 0.10);
       playNote(ctx, 784,  now+0.12,  0.14, 'triangle', 0.10);
       playNote(ctx, 1047, now+0.18,  0.14, 'triangle', 0.11);
       playNote(ctx, 1319, now+0.24,  0.14, 'triangle', 0.11);
       playNote(ctx, 1568, now+0.30,  0.80, 'triangle', 0.12);
-      // Big chord at peak
       playNote(ctx, 523,  now+0.30,  0.80, 'sine',     0.08);
       playNote(ctx, 784,  now+0.30,  0.80, 'sine',     0.08);
       playNote(ctx, 1047, now+0.30,  0.80, 'sine',     0.08);
       playNote(ctx, 1319, now+0.30,  0.80, 'sine',     0.07);
       playNote(ctx, 1568, now+0.30,  0.80, 'sine',     0.07);
-      // Chorus detune layer
       playNote(ctx, 1568, now+0.30,  0.80, 'sine',     0.04, 12);
       playNote(ctx, 1319, now+0.30,  0.80, 'sine',     0.04, -10);
-      // Sparkling high tail
       playNote(ctx, 2093, now+0.40,  0.55, 'sine',     0.04);
       playNote(ctx, 2637, now+0.50,  0.45, 'sine',     0.03);
     }
@@ -1121,6 +1178,9 @@ function playRevealSound(tier) {
 }
 
 // ═══ INIT ═══
+document.getElementById('wheel-select-screen').style.display = 'flex';
+document.getElementById('home-screen').style.display = 'none';
+document.getElementById('pack-screen').style.display = 'none';
 updateCounts();
 </script>
 </body>
