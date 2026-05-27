@@ -654,14 +654,14 @@ body {
 const PRIZES = {
   small: {
     common: [
-      { emoji: '🍬', name: 'Candy or Gum',            desc: 'Pick candy or a piece of gum.' },
-      { emoji: '📺', name: 'Watch a Show',             desc: 'Watch a show at some point during the day.' },
-      { emoji: '🎁', name: 'Prize Box',                desc: 'Pick a prize from the prize box.' },
-      { emoji: '🌙', name: 'Stay Up Late',             desc: 'Stay up 30 minutes past bedtime.' },
-      { emoji: '🎲', name: 'Family Game Night',        desc: 'Pick a game to play with the family.' },
-      { emoji: '📱', name: 'iPad Time',                desc: 'Get 20 minutes of iPad time.' },
-      { emoji: '🛒', name: 'Add to Grocery List',      desc: 'Add your favorite cereal or snack to the grocery list.' },
-      { emoji: '🧺', name: 'Picnic Lunch',             desc: 'Have a picnic for lunch.' },
+      { emoji: '🍬', name: 'Candy or Gum',            desc: 'Pick candy or a piece of gum.',                                    weight: 10 },
+      { emoji: '📺', name: 'Watch a Show',             desc: 'Watch a show at some point during the day.',                      weight: 3.3 },
+      { emoji: '🎁', name: 'Prize Box',                desc: 'Pick a prize from the prize box.',                                weight: 10 },
+      { emoji: '🌙', name: 'Stay Up Late',             desc: 'Stay up 30 minutes past bedtime.',                                weight: 10 },
+      { emoji: '🎲', name: 'Family Game Night',        desc: 'Pick a game to play with the family.',                            weight: 10 },
+      { emoji: '📱', name: 'iPad Time',                desc: 'Get 20 minutes of iPad time.',                                    weight: 3.3 },
+      { emoji: '🛒', name: 'Add to Grocery List',      desc: 'Add your favorite cereal or snack to the grocery list.',          weight: 10 },
+      { emoji: '🧺', name: 'Picnic Lunch',             desc: 'Have a picnic for lunch.',                                        weight: 10 },
     ],
   },
   big: {
@@ -804,6 +804,16 @@ function rollTier() {
 
 function pickPrize(tier) {
   const pool = PRIZES[wheelType][tier];
+  // If any prize has a weight, use weighted random selection
+  if (pool[0].weight !== undefined) {
+    const totalWeight = pool.reduce((sum, p) => sum + p.weight, 0);
+    let r = Math.random() * totalWeight;
+    for (const prize of pool) {
+      r -= prize.weight;
+      if (r <= 0) return prize;
+    }
+    return pool[pool.length - 1];
+  }
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
