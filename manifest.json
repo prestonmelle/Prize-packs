@@ -1,0 +1,18 @@
+{
+  "name": "Melle Kids Prize Wheel",
+  "short_name": "Prize Wheel",
+  "description": "Spin to win prizes — for Hudson and Monroe",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#080808",
+  "theme_color": "#080808",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
